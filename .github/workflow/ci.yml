@@ -1,0 +1,81 @@
+# Integración continua del Recetario.
+# Revisa PHP, HTML, CSS y JavaScript cada vez que se sube código
+# o se abre una pull request hacia las ramas dev o main.
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch: # permite lanzarlo a mano desde la pestaña Actions
+
+jobs:
+  php:
+    name: PHP (sintaxis)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+      - name: Comprobar la sintaxis de todos los archivos .php
+        run: |
+          find . -name "*.php" -not -path "./node_modules/*" -print0 \
+            | xargs -0 -n1 php -l
+
+  html:
+    name: HTML (validar las páginas generadas)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Generar el HTML de las páginas con PHP
+        # Se ejecuta cada página que incluye la cabecera común y se guarda su HTML.
+        # Si PHP muestra algún aviso (por ejemplo, un include que no existe), falla.
+        run: |
+          mkdir -p build/html
+          for pagina in $(grep -rlE "include.*header\.php" --include="*.php" . | grep -v node_modules); do
+            salida="build/html/$(echo "${pagina#./}" | tr '/' '_').html"
+            echo "Generando $pagina"
+            php -d display_errors=stderr -d error_reporting=E_ALL "$pagina" > "$salida" 2> errores.txt
+            if [ -s errores.txt ]; then cat errores.txt; exit 1; fi
+          done
+          find . -name "*.html" -not -path "./node_modules/*" -not -path "./build/*" -exec cp {} build/html/ \;
+      - name: Validar el HTML
+        run: npm run lint:html
+
+  frontend:
+    name: CSS y JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Revisar el CSS con Stylelint
+        run: npm run lint:css
+      - name: Revisar el JavaScript con ESLint
+        run: npm run lint:js
+
+  secretos:
+    name: Sin credenciales en el repositorio
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Comprobar que no se ha subido la configuración local
+        run: |
+          prohibidos=$(git ls-files | grep -E '(^|/)config\.php$|\.env$' || true)
+          if [ -n "$prohibidos" ]; then
+            echo "Estos archivos no deben estar en el repositorio:"
+            echo "$prohibidos"
+            exit 1
+          fi
+          echo "Correcto: no hay archivos de configuración local en el repositorio."
