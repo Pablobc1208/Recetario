@@ -1,0 +1,46 @@
+# Crea una release automáticamente cada vez que se fusiona (merge) algo en main.
+# Las versiones van subiendo de uno en uno: v1.0, v2.0, v3.0...
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # necesario para crear la etiqueta y la release
+
+concurrency:
+  group: release # si hay dos merges seguidos, se crean de una en una
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Crear la nueva versión
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # descarga todo el historial y las etiquetas
+
+      - name: Calcular el número de la siguiente versión
+        id: version
+        run: |
+          ultima=$(git tag --list 'v*.0' --sort=-v:refname | head -n1)
+          if [ -z "$ultima" ]; then
+            siguiente="v1.0"
+          else
+            numero=${ultima#v}
+            numero=${numero%%.*}
+            siguiente="v$((numero + 1)).0"
+          fi
+          echo "Última versión: ${ultima:-ninguna} -> nueva: $siguiente"
+          echo "tag=$siguiente" >> "$GITHUB_OUTPUT"
+
+      - name: Crear la release en GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --title "Recetario ${{ steps.version.outputs.tag }}" \
+            --generate-notes
