@@ -1,0 +1,95 @@
+/* ===== Guía de estilo: colores y tipografías =====
+   Cambiad estos valores si la guía de estilo final es distinta. */
+:root {
+    --color-principal: #c0392b;   /* rojo tomate: botones, enlaces activos */
+    --color-secundario: #e67e22;  /* naranja: detalles y hover */
+    --color-fondo: #fdf8f2;       /* crema: fondo de la página */
+    --color-texto: #2d2a26;       /* casi negro: texto */
+    --color-claro: #ffffff;
+    --fuente-titulos: 'Lora', Georgia, serif;
+    --fuente-texto: 'Open Sans', Arial, sans-serif;
+    --transicion: 0.2s ease;
+}
+
+/* ===== Base ===== */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--fuente-texto);
+}
+
+h1, h2, h3 {
+    font-family: var(--fuente-titulos);
+    color: var(--color-principal);
+}
+
+.contenido {
+    flex: 1; /* empuja el pie hacia abajo */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ===== Cabecera y navegación ===== */
+.navegacion {
+    background-color: var(--color-principal);
+}
+
+.navegacion .logo {
+    font-family: var(--fuente-titulos);
+    font-weight: 700;
+    color: var(--color-claro);
+}
+
+.navegacion .nav-link {
+    color: var(--color-claro);
+    border-bottom: 2px solid transparent;
+    transition: border-color var(--transicion), color var(--transicion);
+}
+
+.navegacion .nav-link:hover,
+.navegacion .nav-link:focus,
+.navegacion .nav-link.active {
+    color: var(--color-claro);
+    border-bottom-color: var(--color-secundario);
+}
+
+.navegacion .navbar-toggler {
+    border-color: var(--color-claro);
+}
+
+.navegacion .navbar-toggler-icon {
+    filter: invert(1); /* icono blanco sobre fondo rojo */
+}
+
+/* ===== Mensajes ===== */
+.mensaje {
+    margin-bottom: 1.5rem;
+}
+
+/* ===== Pie ===== */
+.pie {
+    background-color: var(--color-texto);
+    color: var(--color-claro);
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.pie p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ===== Móvil ===== */
+@media (max-width: 767px) {
+    .contenido {
+        padding-top: 1rem;
+    }
+
+    .navegacion .nav-link {
+        padding-left: 0.5rem;
+    }
+}
