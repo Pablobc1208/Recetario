@@ -85,8 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ing['nombre'] === '' || strlen($ing['nombre']) > 100) {
             $errores[] = "Ingrediente $fila: escribe un nombre de hasta 100 caracteres.";
         }
-        if (!is_numeric($ing['cantidad']) || $ing['cantidad'] <= 0) {
-            $errores[] = "Ingrediente $fila: la cantidad debe ser un número mayor que 0.";
+        $cantidadValida = preg_match('/^[0-9]{1,6}(\.[0-9]{1,2})?$/', $ing['cantidad']) === 1
+            && (float) $ing['cantidad'] > 0;
+        if (!$cantidadValida) {
+            $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
         }
         if (!in_array($ing['unidad'], $unidadesValidas)) {
             $errores[] = "Ingrediente $fila: elige una unidad.";
@@ -203,7 +205,9 @@ require_once __DIR__ . '/header.php';
         </ul>
     <?php endif; ?>
 
-    <form action="formulario_receta.php" method="POST">
+    // novalidate: desactiva los avisos del navegador para que se vean los de validar_receta.js.
+    // Si JavaScript no está activo, sigue validando el servidor. 
+    <form action="formulario_receta.php" method="POST" id="form-receta" novalidate>
         <fieldset>
             <legend>1. Datos de la receta</legend>
             <p>Escribe un nombre, una breve descripción, el tiempo y la categoría.</p>
@@ -233,7 +237,7 @@ require_once __DIR__ . '/header.php';
         </fieldset>
 
         <fieldset>
-            <legend>2. Ingredientes</legend>
+            <legend id="legend-ingredientes">2. Ingredientes</legend>
             <p>Añade al menos uno. En cada fila indica el ingrediente, la cantidad y la unidad.</p>
             <?php for ($i = 0; $i < $numFilas; $i++):
                 // Si no llegó una fila para esta posición, se prepara una vacía.
@@ -268,4 +272,6 @@ require_once __DIR__ . '/header.php';
 
         <button type="submit">Guardar receta</button>
     </form>
+
+    <script defer src="../JS/validarformulario_receta.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
