@@ -1,5 +1,5 @@
 <?php
-// Solo recibe datos por POST desde el botón «Eliminar receta» de receta.php.
+// Solo recibe datos por POST desde el botón «Eliminar receta» de receta.php y mis_recetas.php.
 session_start();
 
 require_once __DIR__ . '/conexion.php';
@@ -15,12 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+// Página a la que volver: «Mis recetas» si se borró desde allí (#48); si no, el listado.
+// Solo se aceptan estos dos valores para no redirigir a cualquier dirección.
+$destino = ($_POST['volver'] ?? '') === 'mis_recetas' ? 'mis_recetas.php' : 'listado_recetas.php';
+
 // 3. Recoger el id de la receta y validarlo.
 $id = filter_input(INPUT_POST, 'id_receta', FILTER_VALIDATE_INT);
 
 if (!$id || $id < 1) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'No se ha indicado una receta válida.'];
-    header('Location: listado_recetas.php');
+    header('Location: ' . $destino);
     exit;
 }
 try {
@@ -44,6 +48,6 @@ try {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'No se ha podido eliminar la receta. Inténtalo más tarde.'];
 }
 
-// 6. Redirigir al listado, donde mensajes.php muestra el aviso.
-header('Location: listado_recetas.php');
+// 6. Redirigir a la página de origen, donde mensajes.php muestra el aviso.
+header('Location: ' . $destino);
 exit;
