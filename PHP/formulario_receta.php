@@ -205,9 +205,7 @@ require_once __DIR__ . '/header.php';
         </ul>
     <?php endif; ?>
 
-    // novalidate: desactiva los avisos del navegador para que se vean los de validar_receta.js.
-    // Si JavaScript no está activo, sigue validando el servidor. 
-    <form action="formulario_receta.php" method="POST" id="form-receta" novalidate>
+    <form action="formulario_receta.php" method="POST" id="form-receta">
         <fieldset>
             <legend>1. Datos de la receta</legend>
             <p>Escribe un nombre, una breve descripción, el tiempo y la categoría.</p>
