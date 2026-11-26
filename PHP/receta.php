@@ -74,24 +74,14 @@ require_once __DIR__ . '/header.php';
 
     <?php if ($esAutor): ?>
         <!-- Editar va por GET (solo muestra el formulario); eliminar va por POST (#11). -->
+        <!-- La confirmación antes de eliminar está en JS/eliminar.js -->
         <p>
             <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar receta</a>
         </p>
-        <form id="form-eliminar" action="eliminar_receta.php" method="POST">
+        <form class="form-eliminar" action="eliminar_receta.php" method="POST">
             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
             <button type="submit">Eliminar receta</button>
         </form>
-
-        <script>
-            // Pedir confirmación antes de eliminar.
-            // Si el usuario pulsa «Cancelar», preventDefault() evita que se envíe el formulario.
-            const formEliminar = document.getElementById('form-eliminar');
-            formEliminar.addEventListener('submit', (e) => {
-                if (!confirm('¿Seguro que quieres eliminar esta receta? No se puede deshacer.')) {
-                    e.preventDefault();
-                }
-            });
-        </script>
     <?php endif; ?>
 
     <h2>Ingredientes</h2>
@@ -120,5 +110,6 @@ require_once __DIR__ . '/header.php';
 <p><a href="listado_recetas.php">Volver al listado</a></p>
 
 <script src="../JS/raciones.js"></script>
+<script src="../JS/eliminar.js"></script>
 
 <?php require_once __DIR__ . '/footer.php'; ?>
