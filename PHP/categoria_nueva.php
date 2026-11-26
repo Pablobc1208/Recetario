@@ -39,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { //solo al enviar el formulario
     }
 }
 
+//titulo de la pestaña y enlace activo del menu
+$titulo = 'Nueva categoría';
+$paginaActual = 'categorias';
 require_once __DIR__ . '/header.php';
 ?>
 <h1>Nueva categoría</h1>
@@ -49,8 +52,7 @@ require_once __DIR__ . '/header.php';
 
 <form method="post" action="categoria_nueva.php">
     <label for="nombre">Nombre</label>
-    <input type="text" id="nombre" name="nombre" maxlength="50" required
-        value="<?= htmlspecialchars($nombre) ?>">
+    <input type="text" id="nombre" name="nombre" maxlength="50" required value="<?= htmlspecialchars($nombre) ?>">
     <button type="submit">Guardar</button>
 </form>
 
