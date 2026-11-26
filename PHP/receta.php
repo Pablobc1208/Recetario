@@ -98,6 +98,6 @@ require_once __DIR__ . '/header.php';
     <p><?= nl2br(htmlspecialchars($receta['instrucciones'], ENT_QUOTES, 'UTF-8')) ?></p>
 <?php endif; ?>
 
-<p><a href="recetas.php">Volver al listado</a></p>
+<p><a href="listado_recetas.php">Volver al listado</a></p>
 
 <?php require_once __DIR__ . '/footer.php'; ?>
