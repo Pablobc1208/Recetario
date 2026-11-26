@@ -3,7 +3,7 @@
 $enlaces = [
     'inicio'  => ['url' => 'index.php',        'texto' => 'Inicio'],
     'recetas' => ['url' => 'recetas.php',      'texto' => 'Recetas'],
-    'nueva'   => ['url' => 'nueva_receta.php', 'texto' => 'Nueva receta'],
+    'nueva'   => ['url' => 'formulario_receta.php', 'texto' => 'Nueva receta'],
 ];
 ?>
 <nav class="navbar navbar-expand-md navegacion">
