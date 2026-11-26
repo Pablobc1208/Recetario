@@ -6,6 +6,9 @@ require_once __DIR__ . '/conexion.php';
 $stmt = $pdo->prepare('SELECT id_categoria, nombre FROM categorias ORDER BY nombre'); //consulta ordenada alfabeticamente
 $stmt->execute();
 
+//titulo de la pestaña y enlace activo del menu
+$titulo = 'Categorías';
+$paginaActual = 'categorias';
 require_once __DIR__ . '/header.php';
 ?>
 <h1>Categorías</h1>
@@ -13,15 +16,15 @@ require_once __DIR__ . '/header.php';
 <p><a href="categoria_nueva.php">Añadir categoría</a></p>
 
 <?php if ($stmt->rowCount() === 0): //lista vacia 
-?>
+        ?>
     <p>Todavía no hay categorías.</p>
 <?php else: ?>
     <ul>
         <?php while ($fila = $stmt->fetch()): //una fila por vuelta y false al acabar 
-        ?>
+                    ?>
             <li>
                 <a href="categoria_recetas.php?id=<?= htmlspecialchars($fila['id_categoria']) //pasa el id por GET 
-                                                    ?>">
+                            ?>">
                     <?= htmlspecialchars($fila['nombre']) ?>
                 </a>
             </li>
