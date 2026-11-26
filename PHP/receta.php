@@ -77,10 +77,21 @@ require_once __DIR__ . '/header.php';
         <p>
             <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar receta</a>
         </p>
-        <form action="eliminar_receta.php" method="POST">
+        <form id="form-eliminar" action="eliminar_receta.php" method="POST">
             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
             <button type="submit">Eliminar receta</button>
         </form>
+
+        <script>
+            // Pedir confirmación antes de eliminar.
+            // Si el usuario pulsa «Cancelar», preventDefault() evita que se envíe el formulario.
+            const formEliminar = document.getElementById('form-eliminar');
+            formEliminar.addEventListener('submit', (e) => {
+                if (!confirm('¿Seguro que quieres eliminar esta receta? No se puede deshacer.')) {
+                    e.preventDefault();
+                }
+            });
+        </script>
     <?php endif; ?>
 
     <h2>Ingredientes</h2>
