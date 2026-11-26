@@ -26,4 +26,4 @@ $paginaActual = $paginaActual ?? '';
         <?php include __DIR__ . '/nav.php'; ?>
     </header>
     <main class="container contenido">
-        <?php include __DIR__ . '/mensajes.php'; ?>
+<?php include __DIR__ . '/mensajes.php'; ?>

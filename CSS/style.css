@@ -5,9 +5,9 @@
     --color-secundario: #e67e22;  /* naranja: detalles y hover */
     --color-fondo: #fdf8f2;       /* crema: fondo de la página */
     --color-texto: #2d2a26;       /* casi negro: texto */
-    --color-claro: #ffffff;
-    --fuente-titulos: 'Lora', Georgia, serif;
-    --fuente-texto: 'Open Sans', Arial, sans-serif;
+    --color-claro: #fff;
+    --fuente-titulos: 'Lora', georgia, serif;
+    --fuente-texto: 'Open Sans', arial, sans-serif;
     --transicion: 0.2s ease;
 }
 
