@@ -21,9 +21,18 @@ $enlaces = [
                     </li>
                 <?php endforeach; ?>
                 <?php if (isset($_SESSION['usuario'])): ?>
+                    <li class="nav-item"><span class="nav-link">Hola,
+                            <?= htmlspecialchars($_SESSION['usuario'], ENT_QUOTES, 'UTF-8') ?></span></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Cerrar sesión</a></li>
                 <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="login.php">Iniciar sesión</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $paginaActual === 'login' ? 'active' : '' ?>" <?= $paginaActual === 'login' ? 'aria-current="page"' : '' ?> href="login.php">Iniciar sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $paginaActual === 'registro' ? 'active' : '' ?>"
+                            <?= $paginaActual === 'registro' ? 'aria-current="page"' : '' ?>
+                            href="registro.php">Registrarse</a>
+                    </li>
                 <?php endif; ?>
             </ul>
         </div>
