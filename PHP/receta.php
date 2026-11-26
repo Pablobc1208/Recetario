@@ -77,17 +77,36 @@ require_once __DIR__ . '/header.php';
         <p>
             <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar receta</a>
         </p>
-        <form action="eliminar_receta.php" method="POST">
+        <form id="form-eliminar" action="eliminar_receta.php" method="POST">
             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
             <button type="submit">Eliminar receta</button>
         </form>
+
+        <script>
+            // Pedir confirmación antes de eliminar.
+            // Si el usuario pulsa «Cancelar», preventDefault() evita que se envíe el formulario.
+            const formEliminar = document.getElementById('form-eliminar');
+            formEliminar.addEventListener('submit', (e) => {
+                if (!confirm('¿Seguro que quieres eliminar esta receta? No se puede deshacer.')) {
+                    e.preventDefault();
+                }
+            });
+        </script>
     <?php endif; ?>
 
     <h2>Ingredientes</h2>
+
+    <!-- Calculadora de raciones (#18): JS/raciones.js recalcula las cantidades. -->
+    <p>
+        <label for="raciones">Cantidades para</label>
+        <input type="number" id="raciones" min="1" max="20" value="4">
+        personas
+    </p>
+
     <ul>
         <?php foreach ($ingredientes as $ingrediente): ?>
             <li>
-                <?= (float) $ingrediente['cantidad'] ?>
+                <span class="cantidad"><?= (float) $ingrediente['cantidad'] ?></span>
                 <?= htmlspecialchars($ingrediente['unidad'], ENT_QUOTES, 'UTF-8') ?>
                 de <?= htmlspecialchars($ingrediente['nombre'], ENT_QUOTES, 'UTF-8') ?>
             </li>
@@ -99,5 +118,7 @@ require_once __DIR__ . '/header.php';
 <?php endif; ?>
 
 <p><a href="listado_recetas.php">Volver al listado</a></p>
+
+<script src="../JS/raciones.js"></script>
 
 <?php require_once __DIR__ . '/footer.php'; ?>
