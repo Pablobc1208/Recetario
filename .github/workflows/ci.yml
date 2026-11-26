@@ -1,5 +1,5 @@
 # Integración continua del Recetario.
-# Revisa PHP, HTML, CSS y JavaScript cada vez que se sube código
+# Revisa PHP, SQL, HTML, CSS y JavaScript cada vez que se sube código
 # o se abre una pull request hacia las ramas dev o main.
 name: CI
 
@@ -23,6 +23,35 @@ jobs:
         run: |
           find . -name "*.php" -not -path "./node_modules/*" -print0 \
             | xargs -0 -n1 php -l
+
+  sql:
+    name: SQL (importar schema.sql)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root # contraseña solo para esta prueba temporal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Importar el script en una base de datos vacía
+        run: mysql -h 127.0.0.1 -uroot -proot < docs/sql/schema.sql
+      - name: Comprobar que se han creado las 5 tablas
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot -e "SHOW TABLES" recetario
+          tablas=$(mysql -h 127.0.0.1 -uroot -proot -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'recetario'")
+          if [ "$tablas" -ne 5 ]; then
+            echo "Se esperaban 5 tablas y hay $tablas"
+            exit 1
+          fi
+          echo "Correcto: schema.sql crea las 5 tablas con sus datos de prueba."
 
   html:
     name: HTML (validar las páginas generadas)
