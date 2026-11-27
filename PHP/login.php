@@ -14,31 +14,37 @@ $errores = [];
 $nombreUsuario = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
-    $contrasena = $_POST['contrasena'] ?? ''; // la contraseña no se recorta: los espacios cuentan
+    //is_string comprueba que llega texto si se manda por ej un array se trata como vacio
+    $nombreUsuario = is_string($_POST['nombre_usuario'] ?? null) ? trim($_POST['nombre_usuario']) : '';
+    $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : ''; // la contraseña no se recorta todps los espacios cuentan
 
     if ($nombreUsuario === '' || $contrasena === '') {
         $errores[] = 'Escribe tu nombre de usuario y tu contraseña.';
     }
 
     if (empty($errores)) {
-        // Busca al usuario con una consulta preparada.
-        $stmt = $pdo->prepare('SELECT id_usuario, nombre_usuario, contrasena FROM usuarios WHERE nombre_usuario = ?');
-        $stmt->execute([$nombreUsuario]);
-        $usuario = $stmt->fetch();
+        try {
+            // Busca al usuario con una consulta preparada.
+            $stmt = $pdo->prepare('SELECT id_usuario, nombre_usuario, contrasena FROM usuarios WHERE nombre_usuario = ?');
+            $stmt->execute([$nombreUsuario]);
+            $usuario = $stmt->fetch();
 
-        // password_verify compara la contraseña escrita con el hash guardado.
-        if ($usuario !== false && password_verify($contrasena, $usuario['contrasena'])) {
-            session_regenerate_id(true); // nuevo id de sesión al entrar
-            $_SESSION['id_usuario'] = $usuario['id_usuario'];
-            $_SESSION['usuario'] = $usuario['nombre_usuario'];
-            $_SESSION['mensaje'] = ['tipo' => 'exito', 'texto' => 'Hola, ' . $usuario['nombre_usuario'] . '. Has iniciado sesión.'];
-            header('Location: listado_recetas.php');
-            exit;
+            // password_verify compara la contraseña escrita con el hash guardado.
+            if ($usuario !== false && password_verify($contrasena, $usuario['contrasena'])) {
+                session_regenerate_id(true); // nuevo id de sesión al entrar
+                $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                $_SESSION['usuario'] = $usuario['nombre_usuario'];
+                $_SESSION['mensaje'] = ['tipo' => 'exito', 'texto' => 'Hola, ' . $usuario['nombre_usuario'] . '. Has iniciado sesión.'];
+                header('Location: listado_recetas.php');
+                exit;
+            }
+
+            // Mensaje genérico: no se dice si falla el usuario o la contraseña.
+            $errores[] = 'Usuario o contraseña incorrectos.';
+        } catch (PDOException $e) {
+            error_log($e->getMessage()); // el detalle técnico solo va al log del servidor
+            $errores[] = 'No se ha podido iniciar sesión. Inténtalo más tarde.';
         }
-
-        // Mensaje genérico: no se dice si falla el usuario o la contraseña.
-        $errores[] = 'Usuario o contraseña incorrectos.';
     }
 }
 

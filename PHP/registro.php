@@ -15,12 +15,13 @@ $nombreUsuario = '';
 $email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Recoger los datos del formulario.
-    $nombreUsuario = trim($_POST['nombre_usuario'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $emailValido = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
-    $contrasena = $_POST['contrasena'] ?? '';
-    $repetir = $_POST['repetir_contrasena'] ?? '';
+    //is_string comprueba que llega texto si se manda por ej un array se trata como vacio
+    $nombreUsuario = is_string($_POST['nombre_usuario'] ?? null) ? trim($_POST['nombre_usuario']) : '';
+    $email = is_string($_POST['email'] ?? null) ? trim($_POST['email']) : '';
+    //se valida el email sin espacios el filter_var devuelve el email o false
+    $emailValido = filter_var($email, FILTER_VALIDATE_EMAIL);
+    $contrasena = is_string($_POST['contrasena'] ?? null) ? $_POST['contrasena'] : '';
+    $repetir = is_string($_POST['repetir_contrasena'] ?? null) ? $_POST['repetir_contrasena'] : '';
 
     // 2. Validar en el servidor (aunque el HTML ya tenga required).
     if (strlen($nombreUsuario) < 3 || strlen($nombreUsuario) > 50) {

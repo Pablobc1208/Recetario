@@ -34,10 +34,17 @@ if (!$idReceta) {
 $urlRetorno = $volverMisRecetas ? 'mis_recetas.php' : 'receta.php?id=' . (int) $idReceta;
 
 //buscar la receta para saber si existe y quien es el autor
-$stmt = $pdo->prepare('SELECT id_receta, titulo, descripcion, instrucciones, tiempo_minutos, id_categoria, id_usuario
-                       FROM recetas WHERE id_receta = :id');
-$stmt->execute([':id' => $idReceta]);
-$receta = $stmt->fetch();
+try {
+    $stmt = $pdo->prepare('SELECT id_receta, titulo, descripcion, instrucciones, tiempo_minutos, id_categoria, id_usuario
+                           FROM recetas WHERE id_receta = :id');
+    $stmt->execute([':id' => $idReceta]);
+    $receta = $stmt->fetch();
+} catch (PDOException $e) {
+    error_log($e->getMessage()); //el detalle tecnico solo va al log del servidor
+    $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'No se ha podido cargar la receta. Inténtalo más tarde.'];
+    header('Location: listado_recetas.php');
+    exit;
+}
 
 if (!$receta) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'Esa receta no existe.'];
@@ -52,29 +59,42 @@ if ($receta['id_usuario'] != $_SESSION['id_usuario']) {
     exit;
 }
 
+$errores = [];
+
 //categorias para el selector y para validar la que se envia
-$stmt = $pdo->prepare('SELECT id_categoria, nombre FROM categorias ORDER BY nombre');
-$stmt->execute();
-$categorias = $stmt->fetchAll();
+$categorias = [];
+try {
+    $stmt = $pdo->prepare('SELECT id_categoria, nombre FROM categorias ORDER BY nombre');
+    $stmt->execute();
+    $categorias = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log($e->getMessage()); //el detalle tecnico solo va al log del servidor
+    $errores[] = 'No se han podido cargar las categorías. Inténtalo más tarde.';
+}
 $idsCategorias = [];
 foreach ($categorias as $cat) {
     $idsCategorias[] = $cat['id_categoria'];
 }
 
-$errores = [];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //los valores del formulario son los que ha escrito el usuario
-    $tituloReceta  = trim($_POST['titulo'] ?? '');
-    $descripcion   = trim($_POST['descripcion'] ?? '');
-    $tiempoMinutos = trim($_POST['tiempo_minutos'] ?? '');
-    $instrucciones = trim($_POST['instrucciones'] ?? '');
+    //is_string comprueba que llega texto: si alguien manda un array (campo[]=...), se trata como vacio
+    $tituloReceta  = is_string($_POST['titulo'] ?? null) ? trim($_POST['titulo']) : '';
+    $descripcion   = is_string($_POST['descripcion'] ?? null) ? trim($_POST['descripcion']) : '';
+    $tiempoMinutos = is_string($_POST['tiempo_minutos'] ?? null) ? trim($_POST['tiempo_minutos']) : '';
+    $instrucciones = is_string($_POST['instrucciones'] ?? null) ? trim($_POST['instrucciones']) : '';
     $idCategoria   = filter_input(INPUT_POST, 'id_categoria', FILTER_VALIDATE_INT);
     $tiempoValido  = filter_input(INPUT_POST, 'tiempo_minutos', FILTER_VALIDATE_INT);
 
     $nombres    = $_POST['ing_nombre'] ?? [];
     $cantidades = $_POST['ing_cantidad'] ?? [];
     $unidades   = $_POST['ing_unidad'] ?? [];
+    //estos tres si tienen que ser arrays; si no lo son se descartan y salta "al menos un ingrediente"
+    if (!is_array($nombres) || !is_array($cantidades) || !is_array($unidades)) {
+        $nombres = [];
+        $cantidades = [];
+        $unidades = [];
+    }
 
     //validacion en el servidor
     if ($tituloReceta === '' || strlen($tituloReceta) > 150) {
@@ -100,10 +120,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ingredientes = [];
     $ingredientesValidos = [];
     foreach ($nombres as $i => $nombre) {
+        //cada elemento tiene que ser texto; si no lo es se trata como vacio
+        $cantidad = $cantidades[$i] ?? '';
+        $unidad   = $unidades[$i] ?? '';
         $ing = [
-            'nombre'   => trim($nombre),
-            'cantidad' => trim($cantidades[$i] ?? ''),
-            'unidad'   => $unidades[$i] ?? '',
+            'nombre'   => is_string($nombre) ? trim($nombre) : '',
+            'cantidad' => is_string($cantidad) ? trim($cantidad) : '',
+            'unidad'   => is_string($unidad) ? $unidad : '',
         ];
         $ingredientes[] = $ing;
 
@@ -215,13 +238,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idCategoria   = $receta['id_categoria'];
 
     //ingredientes actuales a traves de la tabla intermedia
-    $stmt = $pdo->prepare('SELECT i.nombre, ri.cantidad, ri.unidad
-                           FROM receta_ingrediente ri
-                           JOIN ingredientes i ON i.id_ingrediente = ri.id_ingrediente
-                           WHERE ri.id_receta = :id
-                           ORDER BY i.nombre');
-    $stmt->execute([':id' => $idReceta]);
-    $ingredientes = $stmt->fetchAll();
+    $ingredientes = [];
+    try {
+        $stmt = $pdo->prepare('SELECT i.nombre, ri.cantidad, ri.unidad
+                               FROM receta_ingrediente ri
+                               JOIN ingredientes i ON i.id_ingrediente = ri.id_ingrediente
+                               WHERE ri.id_receta = :id
+                               ORDER BY i.nombre');
+        $stmt->execute([':id' => $idReceta]);
+        $ingredientes = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log($e->getMessage()); //el detalle tecnico solo va al log del servidor
+        $errores[] = 'No se han podido cargar los ingredientes de la receta. Inténtalo más tarde.';
+    }
 }
 
 //se pintan los ingredientes que ya tiene la receta; si no tiene ninguno, una fila vacia
@@ -269,7 +298,7 @@ require_once __DIR__ . '/header.php';
         <select id="id_categoria" name="id_categoria" required>
             <option value="">Selecciona una categoría</option>
             <?php foreach ($categorias as $cat): ?>
-                <option value="<?= $cat['id_categoria'] ?>" <?= $cat['id_categoria'] == $idCategoria ? 'selected' : '' ?>>
+                <option value="<?= (int) $cat['id_categoria'] ?>" <?= $cat['id_categoria'] == $idCategoria ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cat['nombre'], ENT_QUOTES, 'UTF-8') ?>
                 </option>
             <?php endforeach; ?>
