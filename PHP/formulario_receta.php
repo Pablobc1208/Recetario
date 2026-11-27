@@ -189,10 +189,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Lee y borra el mensaje para que solo aparezca una vez.
-$mensaje = $_SESSION['mensaje'] ?? '';
-unset($_SESSION['mensaje']);
-
 // Tras un POST se muestran las filas enviadas; en la primera visita se muestran cinco vacías.
 $numFilas = count($ingredientes);
 if ($numFilas === 0) {
@@ -206,10 +202,6 @@ require_once __DIR__ . '/header.php';
 ?>
 <h1>Crear una receta</h1>
 <p>Completa los datos, añade al menos un ingrediente y explica cómo preparar la receta.</p>
-
-<?php if ($mensaje): ?>
-    <p class="aviso aviso-ok" role="status">✓ <?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?></p>
-<?php endif; ?>
 
 <?php if ($errores): ?>
     <ul class="aviso aviso-error" role="alert">

@@ -7,8 +7,9 @@ $error = '';
 
 // 1. Recuperar los filtros enviados por GET (si no se envían, quedan vacíos).
 $idCategoria = filter_input(INPUT_GET, 'categoria', FILTER_VALIDATE_INT);
-$ingrediente = trim($_GET['ingrediente'] ?? '');
-$texto       = trim($_GET['texto'] ?? '');
+// is_string comprueba que llega texto: si alguien pone ?texto[]=x en la URL, se trata como vacío.
+$ingrediente = is_string($_GET['ingrediente'] ?? null) ? trim($_GET['ingrediente']) : '';
+$texto       = is_string($_GET['texto'] ?? null) ? trim($_GET['texto']) : '';
 
 // Hay filtros si se ha elegido una categoría válida o se ha escrito algo en los campos de texto.
 $hayFiltros = $idCategoria || $ingrediente !== '' || $texto !== '';
@@ -71,7 +72,7 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-4">
         <label for="texto" class="form-label">Buscar en el título</label>
         <input type="text" id="texto" name="texto" class="form-control" placeholder="Ej.: tortilla"
-               value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
+            value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-3">
         <label for="categoria" class="form-label">Categoría</label>
@@ -87,7 +88,7 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-3">
         <label for="ingrediente" class="form-label">Ingrediente</label>
         <input type="text" id="ingrediente" name="ingrediente" class="form-control" placeholder="Ej.: huevo"
-               value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
+            value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-2">
         <button type="submit" class="btn btn-primary w-100">Buscar</button>
