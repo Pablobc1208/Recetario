@@ -16,7 +16,7 @@ $volverMisRecetas = (($_SERVER['REQUEST_METHOD'] === 'POST'
     : ($_GET['volver'] ?? '')) === 'mis_recetas');
 
 $unidadesValidas = ['g', 'kg', 'ml', 'l', 'ud', 'cucharada', 'cucharadita'];
-$filasVacias = 2; //filas extra para  añadir ingredientes nuevos
+$maxIngredientes = 20; //máximo de filas de ingredientes; las filas nuevas se añaden con JS/ingredientes.js (#17)
 
 //recoge el id de la receta
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -91,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!in_array($idCategoria, $idsCategorias)) {
         $errores[] = 'Elige una categoría de la lista.';
+    }
+    //el limite de filas tambien se comprueba en el servidor, por si se salta el JavaScript
+    if (count($nombres) > $maxIngredientes) {
+        $errores[] = "Como máximo puedes añadir $maxIngredientes ingredientes.";
     }
 
     $ingredientes = [];
@@ -220,15 +224,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ingredientes = $stmt->fetchAll();
 }
 
-//filas que se pintan las que hay mas unas vacias para añadir nuevos
-$numFilas = count($ingredientes) + $filasVacias;
+//se pintan los ingredientes que ya tiene la receta; si no tiene ninguno, una fila vacia
+$numFilas = count($ingredientes);
+if ($numFilas === 0) {
+    $numFilas = 1;
+}
 
 $titulo = 'Editar receta';
 $paginaActual = 'recetas';
 require_once __DIR__ . '/header.php';
 ?>
 <h1>Editar «<?= htmlspecialchars($receta['titulo'], ENT_QUOTES, 'UTF-8') ?>»</h1>
-<p>Cambia lo que necesites. Para quitar un ingrediente, deja vacíos su nombre y su cantidad.</p>
+<p>Cambia lo que necesites. Para quitar un ingrediente, pulsa «Quitar»; para añadir otro, «Añadir ingrediente».</p>
 
 <?php if ($errores): ?>
     <ul class="aviso aviso-error" role="alert">
@@ -271,27 +278,35 @@ require_once __DIR__ . '/header.php';
 
     <fieldset>
         <legend id="legend-ingredientes">2. Ingredientes</legend>
-        <?php for ($i = 0; $i < $numFilas; $i++):
-            $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
-            <p>
-                <label for="ing_nombre_<?= $i ?>">Ingrediente <?= $i + 1 ?></label>
-                <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
-                    value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
-                <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
-                <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
-                    inputmode="decimal" min="0.01" max="999999.99" step="0.01"
-                    value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+        <!-- PHP pinta los ingredientes que ya tiene la receta; JS/ingredientes.js añade y quita filas (#17). -->
+        <div id="lista-ingredientes" data-maximo="<?= $maxIngredientes ?>">
+            <?php for ($i = 0; $i < $numFilas; $i++):
+                $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
+                <p class="fila-ingrediente">
+                    <label for="ing_nombre_<?= $i ?>" class="etiqueta-ingrediente">Ingrediente <?= $i + 1 ?></label>
+                    <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
+                        value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
-                <label for="ing_unidad_<?= $i ?>">Unidad</label>
-                <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
-                    <option value="">Unidad</option>
-                    <?php foreach ($unidadesValidas as $u): ?>
-                        <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </p>
-        <?php endfor; ?>
+                    <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
+                    <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
+                        inputmode="decimal" min="0.01" max="999999.99" step="0.01"
+                        value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+
+                    <label for="ing_unidad_<?= $i ?>">Unidad</label>
+                    <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
+                        <option value="">Unidad</option>
+                        <?php foreach ($unidadesValidas as $u): ?>
+                            <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="button" class="btn-quitar">Quitar</button>
+                </p>
+            <?php endfor; ?>
+        </div>
+
+        <button type="button" id="btn-anadir">+ Añadir ingrediente</button>
     </fieldset>
 
     <fieldset>
@@ -305,4 +320,5 @@ require_once __DIR__ . '/header.php';
 
 <p><a href="receta.php?id=<?= (int) $idReceta ?>">Cancelar y volver a la receta</a></p>
 <script defer src="../JS/validarformulario_receta.js"></script>
+<script defer src="../JS/ingredientes.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
