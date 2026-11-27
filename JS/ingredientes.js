@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     // El máximo de filas viene en el atributo data-maximo como texto: Number lo convierte en número
-    const maximo = Number(lista.dataset.maximo);
+    const maximo = Number(lista.getAttribute('data-maximo'));
 
     // Contador para dar un id distinto a cada campo nuevo 
     let contador = lista.querySelectorAll('.fila-ingrediente').length;
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!event.target.matches('.btn-quitar')) {
             return;
         }
-        const fila = event.target.parentNode;
+        const fila = event.target.classList.contains('btn-quitar');
         const totalFilas = lista.querySelectorAll('.fila-ingrediente').length;
 
         if (totalFilas > 1) {
