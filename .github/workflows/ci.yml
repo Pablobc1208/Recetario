@@ -56,6 +56,18 @@ jobs:
   html:
     name: HTML (validar las páginas generadas)
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root # contraseña solo para esta prueba temporal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -65,17 +77,29 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --no-audit --no-fund
+      - name: Crear la base de datos de prueba
+        run: mysql -h 127.0.0.1 -uroot -proot < docs/sql/schema.sql
+      - name: Crear un config.php de prueba (no se sube al repositorio)
+        run: |
+          cat > PHP/config.php <<'FIN'
+          <?php
+          define('DB_DSN', 'mysql:host=127.0.0.1;port=3306;dbname=recetario;charset=utf8mb4');
+          define('DB_USER', 'root');
+          define('DB_PASS', 'root');
+          FIN
       - name: Generar el HTML de las páginas con PHP
         # Se ejecuta cada página que incluye la cabecera común (con include o require_once)
-        # y no necesita la base de datos (no usa conexion.php), y se guarda su HTML.
+        # como si se abriera con GET, y se guarda su HTML.
+        # Las páginas que piden sesión redirigen a login.php y no generan HTML: se descartan.
         # Si PHP muestra algún aviso (por ejemplo, un include que no existe), falla.
         run: |
           mkdir -p build/html
-          for pagina in $(grep -rlE "(include|require_once).*header\.php" --include="*.php" . | grep -v node_modules | xargs grep -L "conexion\.php"); do
+          for pagina in $(grep -rlE "(include|require_once).*header\.php" --include="*.php" . | grep -v node_modules); do
             salida="build/html/$(echo "${pagina#./}" | tr '/' '_').html"
             echo "Generando $pagina"
-            php -d display_errors=stderr -d error_reporting=E_ALL "$pagina" > "$salida" 2> errores.txt
+            REQUEST_METHOD=GET php -d display_errors=stderr -d error_reporting=E_ALL "$pagina" > "$salida" 2> errores.txt
             if [ -s errores.txt ]; then cat errores.txt; exit 1; fi
+            if [ ! -s "$salida" ]; then rm "$salida"; fi
           done
           find . -name "*.html" -not -path "./node_modules/*" -not -path "./build/*" -exec cp {} build/html/ \;
       - name: Validar el HTML
