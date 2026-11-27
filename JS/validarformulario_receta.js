@@ -7,6 +7,21 @@ const patronCantidad    = /^[0-9]{1,6}(\.[0-9]{1,2})?$/; // número con hasta 2 
 
 const formulario = document.querySelector('#form-receta');
 
+// Los campos de cantidad solo admiten valores numéricos. Esta protección evita
+// escribir letras o separadores no válidos antes de que se envíe el formulario.
+const cantidadesNumericas = formulario.querySelectorAll('input[name="ing_cantidad[]"]');
+cantidadesNumericas.forEach((cantidad) => {
+    cantidad.addEventListener('beforeinput', function (event) {
+        if (event.data !== null && /[^0-9.]/.test(event.data)) {
+            event.preventDefault();
+        }
+    });
+
+    cantidad.addEventListener('input', function () {
+        cantidad.value = cantidad.value.replace(/[^0-9.]/g, '');
+    });
+});
+
 // Crea un mensaje de error justo después del elemento indicado y lo marca como inválido.
 function mostrarError(elemento, mensaje) {
     const error = document.createElement('span');

@@ -11,6 +11,10 @@ if (!isset($_SESSION['id_usuario'])) {
     exit;
 }
 
+$volverMisRecetas = (($_SERVER['REQUEST_METHOD'] === 'POST'
+    ? ($_POST['volver'] ?? '')
+    : ($_GET['volver'] ?? '')) === 'mis_recetas');
+
 $unidadesValidas = ['g', 'kg', 'ml', 'l', 'ud', 'cucharada', 'cucharadita'];
 $filasVacias = 2; //filas extra para  añadir ingredientes nuevos
 
@@ -23,9 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (!$idReceta) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'El enlace no es válido.'];
-    header('Location: listado_recetas.php');
+    header('Location: ' . ($volverMisRecetas ? 'mis_recetas.php' : 'listado_recetas.php'));
     exit;
 }
+
+$urlRetorno = $volverMisRecetas ? 'mis_recetas.php' : 'receta.php?id=' . (int) $idReceta;
 
 //buscar la receta para saber si existe y quien es el autor
 $stmt = $pdo->prepare('SELECT id_receta, titulo, descripcion, instrucciones, tiempo_minutos, id_categoria, id_usuario
@@ -35,14 +41,14 @@ $receta = $stmt->fetch();
 
 if (!$receta) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'Esa receta no existe.'];
-    header('Location: listado_recetas.php');
+    header('Location: ' . ($volverMisRecetas ? 'mis_recetas.php' : 'listado_recetas.php'));
     exit;
 }
 
 //solo el autor la edita
 if ($receta['id_usuario'] != $_SESSION['id_usuario']) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'Solo el autor puede editar esta receta.'];
-    header('Location: receta.php?id=' . $idReceta);
+    header('Location: ' . $urlRetorno);
     exit;
 }
 
@@ -106,8 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ing['nombre'] === '' || strlen($ing['nombre']) > 100) {
             $errores[] = "Ingrediente $fila: escribe un nombre de hasta 100 caracteres.";
         }
-        if (!is_numeric($ing['cantidad']) || $ing['cantidad'] <= 0) {
-            $errores[] = "Ingrediente $fila: la cantidad debe ser un número mayor que 0.";
+        $cantidadValida = preg_match('/^[0-9]{1,6}(\.[0-9]{1,2})?$/', $ing['cantidad']) === 1
+            && (float) $ing['cantidad'] > 0;
+        if (!$cantidadValida) {
+            $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
         }
         if (!in_array($ing['unidad'], $unidadesValidas)) {
             $errores[] = "Ingrediente $fila: elige una unidad.";
@@ -183,14 +191,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 //al recargar la pagina no se vuelve a enviar el formulario
                 $_SESSION['mensaje'] = ['tipo' => 'exito', 'texto' => "La receta «{$tituloReceta}» se ha actualizado."];
-                header('Location: receta.php?id=' . $idReceta);
+                header('Location: ' . $urlRetorno);
                 exit;
             }
         } catch (PDOException $e) {
             $pdo->rollBack();
             error_log('Error UPDATE receta: ' . $e->getMessage());
             $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'No se ha podido actualizar la receta. Inténtalo de nuevo.'];
-            header('Location: receta.php?id=' . $idReceta);
+            header('Location: ' . $urlRetorno);
             exit;
         }
     }
@@ -233,6 +241,7 @@ require_once __DIR__ . '/header.php';
 <form action="editar_receta.php" method="POST">
     <!-- El id viaja oculto para saber qué receta se actualiza. Se vuelve a comprobar el autor en el servidor. -->
     <input type="hidden" name="id_receta" value="<?= (int) $idReceta ?>">
+    <input type="hidden" name="volver" value="<?= $volverMisRecetas ? 'mis_recetas' : '' ?>">
 
     <fieldset>
         <legend>1. Datos de la receta</legend>
@@ -270,7 +279,8 @@ require_once __DIR__ . '/header.php';
                     value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
                 <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
-                <input type="text" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
+                <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
+                    inputmode="decimal" min="0.01" max="999999.99" step="0.01"
                     value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
 
                 <label for="ing_unidad_<?= $i ?>">Unidad</label>

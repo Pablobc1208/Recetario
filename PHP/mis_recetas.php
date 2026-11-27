@@ -74,7 +74,7 @@ require_once __DIR__ . '/header.php';
                     </ul>
                     <div class="card-body">
                         <!-- Editar va por GET (solo muestra el formulario); eliminar va por POST -->
-                        <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar</a>
+                        <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>&amp;volver=mis_recetas">Editar</a>
                         <form class="form-eliminar" action="eliminar_receta.php" method="POST">
                             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
                             <!-- Indica a eliminar_receta.php que vuelva a esta página -->
