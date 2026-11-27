@@ -17,3 +17,5 @@ Aplicación web de recetas desarrollada como proyecto de clase (HTML, CSS, JavaS
 - [Base de datos (scripts SQL)](docs/sql/)
 - [Imágenes y diagramas](docs/img/)
 - [Integración continua (GitHub Actions)](docs/integracion-continua.md)
+- [Depuración del JavaScript](docs/depuracion-js.md)
+- [Registro de pruebas](docs/registro-pruebas.md)

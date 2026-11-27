@@ -14,6 +14,7 @@ require_once __DIR__ . '/conexion.php';
 $unidadesValidas = ['g', 'kg', 'ml', 'l', 'ud', 'cucharada', 'cucharadita'];
 $filasIngredientes = 1;   // al entrar se muestra una sola fila; con «Añadir ingrediente» se crean más (#17)
 $maxIngredientes = 20;    // máximo de filas de ingredientes por receta
+$errores = [];           // mensajes de error que se muestran encima del formulario
 
 // Las categorías se usan para llenar el selector y validar la categoría enviada.
 $categorias = [];
@@ -207,8 +208,8 @@ $titulo = 'Nueva receta';
 $paginaActual = 'nueva';
 require_once __DIR__ . '/header.php';
 ?>
-    <h1>Crear una receta</h1>
-    <p>Completa los datos, añade al menos un ingrediente y explica cómo preparar la receta.</p>
+<h1>Crear una receta</h1>
+<p>Completa los datos, añade al menos un ingrediente y explica cómo preparar la receta.</p>
 
 <?php if ($errores): ?>
     <ul class="aviso aviso-error" role="alert">
@@ -218,10 +219,10 @@ require_once __DIR__ . '/header.php';
     </ul>
 <?php endif; ?>
 
-    <form action="formulario_receta.php" method="POST" id="form-receta">
-        <fieldset>
-            <legend>1. Datos de la receta</legend>
-            <p>Escribe un nombre, una breve descripción, el tiempo y la categoría.</p>
+<form action="formulario_receta.php" method="POST" id="form-receta">
+    <fieldset>
+        <legend>1. Datos de la receta</legend>
+        <p>Escribe un nombre, una breve descripción, el tiempo y la categoría.</p>
 
         <label for="titulo">Nombre de la receta *</label>
         <input type="text" id="titulo" name="titulo" maxlength="150" required placeholder="Ej.: Tortilla de patatas"
@@ -247,40 +248,40 @@ require_once __DIR__ . '/header.php';
         </select>
     </fieldset>
 
-        <fieldset>
-            <legend id="legend-ingredientes">2. Ingredientes</legend>
-            <p>Añade al menos uno. En cada fila indica el ingrediente, la cantidad y la unidad.</p>
+    <fieldset>
+        <legend id="legend-ingredientes">2. Ingredientes</legend>
+        <p>Añade al menos uno. En cada fila indica el ingrediente, la cantidad y la unidad.</p>
 
-            <!-- PHP pinta las filas iniciales; JS/ingredientes.js añade y quita filas (#17). -->
-            <div id="lista-ingredientes" data-maximo="<?= $maxIngredientes ?>">
-                <?php for ($i = 0; $i < $numFilas; $i++):
-                    // Si no llegó una fila para esta posición, se prepara una vacía.
-                    $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
-                    <p class="fila-ingrediente">
-                        <label for="ing_nombre_<?= $i ?>" class="etiqueta-ingrediente">Ingrediente <?= $i + 1 ?></label>
-                        <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
-                               placeholder="Ej.: Harina" value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
+        <!-- PHP pinta las filas iniciales; JS/ingredientes.js añade y quita filas (#17). -->
+        <div id="lista-ingredientes" data-maximo="<?= $maxIngredientes ?>">
+            <?php for ($i = 0; $i < $numFilas; $i++):
+                // Si no llegó una fila para esta posición, se prepara una vacía.
+                $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
+                <p class="fila-ingrediente">
+                    <label for="ing_nombre_<?= $i ?>" class="etiqueta-ingrediente">Ingrediente <?= $i + 1 ?></label>
+                    <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
+                        placeholder="Ej.: Harina" value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
-                        <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
-                        <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
-                               inputmode="decimal" min="0.01" max="999999.99" step="0.01"
-                               placeholder="Ej.: 200" value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+                    <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
+                    <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]" inputmode="decimal" min="0.01"
+                        max="999999.99" step="0.01" placeholder="Ej.: 200"
+                        value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
 
-                        <label for="ing_unidad_<?= $i ?>">Unidad</label>
-                        <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
-                            <option value="">Unidad</option>
-                            <?php foreach ($unidadesValidas as $u): ?>
-                                <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <label for="ing_unidad_<?= $i ?>">Unidad</label>
+                    <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
+                        <option value="">Unidad</option>
+                        <?php foreach ($unidadesValidas as $u): ?>
+                            <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
+                        <?php endforeach; ?>
+                    </select>
 
-                        <button type="button" class="btn-quitar">Quitar</button>
-                    </p>
-                <?php endfor; ?>
-            </div>
+                    <button type="button" class="btn-quitar">Quitar</button>
+                </p>
+            <?php endfor; ?>
+        </div>
 
-            <button type="button" id="btn-anadir">+ Añadir ingrediente</button>
-        </fieldset>
+        <button type="button" id="btn-anadir">+ Añadir ingrediente</button>
+    </fieldset>
 
     <fieldset>
         <legend>3. Preparación</legend>
@@ -290,9 +291,9 @@ require_once __DIR__ . '/header.php';
             placeholder="1. Prepara los ingredientes.&#10;2. Sigue con la elaboración..."><?= htmlspecialchars($instrucciones, ENT_QUOTES, 'UTF-8') ?></textarea>
     </fieldset>
 
-        <button type="submit">Guardar receta</button>
-    </form>
+    <button type="submit">Guardar receta</button>
+</form>
 
-    <script defer src="../JS/validarformulario_receta.js"></script>
-    <script defer src="../JS/ingredientes.js"></script>
+<script defer src="../JS/validarformulario_receta.js"></script>
+<script defer src="../JS/ingredientes.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
