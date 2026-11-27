@@ -19,7 +19,7 @@ Cómo hemos depurado los scripts de `JS/` con las herramientas de desarrollo del
    `Uncaught TypeError: fila.remove is not a function` en `ingredientes.js:111`.
    Al hacer clic en el enlace del error se abre la línea en *Sources*.
 2. **Sources → punto de ruptura** en la línea 107 (`const fila = ...`). Se vuelve a pulsar «Quitar», la ejecución se para y con *Step over* (`F10`) se avanza una línea.
-3. En el panel **Scope** se ve que `fila` vale `true` en lugar de ser el `<p>` de la fila. La línea era:
+3. En el panel **Watch** se añade `event.target.parentNode`, que es el `<p class="fila-ingrediente">`: eso es lo que debería guardarse en `fila`. Pero la línea era:
    ```js
    const fila = event.target.classList.contains('btn-quitar');
    ```
@@ -33,7 +33,9 @@ Cómo hemos depurado los scripts de `JS/` con las herramientas de desarrollo del
    ```
 5. **Elements.** Con el inspector abierto sobre `#lista-ingredientes` se comprueba que al pulsar «Quitar» desaparece el `<p class="fila-ingrediente">`, y que con una sola fila los campos se vacían en vez de borrarse.
 
-Capturas: `depuracion_ingredientes.png` (error en consola) y `depuracion_ingredientes_breakpoint.png` (parado en la línea 107 con `fila = true` en *Watch*).
+Capturas: `depuracion_ingredientes.png` (error en consola) y `depuracion_ingredientes_breakpoint.png` (parado en la línea 107 con `event.target.parentNode` en *Watch*).
+
+En las dos capturas también se ve el aviso de PHP `Undefined variable $errores` (línea 213 de `formulario_receta.php`). Es otro fallo que salió al probar: faltaba `$errores = [];` al principio del archivo y se ha añadido en esta misma issue.
 
 ![Error en la consola](depuracionJS/depuracion_ingredientes.png)
 ![Punto de ruptura en ingredientes.js](depuracionJS/depuracion_ingredientes_breakpoint.png)
@@ -41,9 +43,9 @@ Capturas: `depuracion_ingredientes.png` (error en consola) y `depuracion_ingredi
 ## Sesión 2. Calculadora de raciones (`JS/raciones.js`)
 
 1. **Sources → punto de ruptura** dentro del `addEventListener('change', ...)`, en `calculadora.raciones = raciones;`.
-2. En la receta se cambia «Cantidades para» de 4 a 6. La ejecución se para y en **Scope** se ve `raciones = 6` y el objeto `calculadora` con su array `cantidades`.
-3. En la **Console**, con la ejecución parada, se escribe `calculadora.cantidadesNuevas()` y se comprueba que cada cantidad sale multiplicada por 6/4 (200 → 300).
-4. Se prueba un valor fuera de rango (25): con *Step over* se ve que entra en el `if` y el campo vuelve al valor anterior.
+2. En la receta se cambia «Cantidades para» de 4 a 5. La ejecución se para y en **Watch** se ve `raciones: 5`; con *Step over* (`F10`) `calculadora.raciones` también pasa a 5.
+3. En **Watch** se despliega `calculadora.cantidadesNuevas()` y se comprueba que cada cantidad sale multiplicada por 5/4 (200 → 250).
+4. Se prueba un valor fuera de rango (25): la ejecución no llega a la línea 74 porque el `return` del `if` corta antes, y el campo vuelve al valor anterior.
 
 Captura: `depuracion_raciones.png`.
 
@@ -70,5 +72,5 @@ Capturas: `depuracion-validacion1.png`, `depuracion-validacion2.png` y `depuraci
 ## Conclusiones
 
 - Leer el error de la consola da el archivo y la línea exactos, así que es lo primero que se mira.
-- Un punto de ruptura y el panel *Scope* enseñan el valor real de cada variable; así encontramos el fallo de `ingredientes.js`, que a simple vista parecía correcto.
+- Un punto de ruptura y el panel *Watch* enseñan el valor real de cada variable; así encontramos el fallo de `ingredientes.js`, que a simple vista parecía correcto.
 - El inspector sirve para comprobar que el JS cambia bien el HTML y las clases.
