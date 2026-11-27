@@ -2,18 +2,57 @@
 require_once __DIR__ . '/conexion.php';
 
 $recetas = [];
+$categorias = [];
 $error = '';
 
+// 1. Recuperar los filtros enviados por GET (si no se envían, quedan vacíos).
+$idCategoria = filter_input(INPUT_GET, 'categoria', FILTER_VALIDATE_INT);
+$ingrediente = trim($_GET['ingrediente'] ?? '');
+$texto       = trim($_GET['texto'] ?? '');
+
+// Hay filtros si se ha elegido una categoría válida o se ha escrito algo en los campos de texto.
+$hayFiltros = $idCategoria || $ingrediente !== '' || $texto !== '';
+
 try {
-    // 1. Recuperar todas las recetas con su categoría y su autor, de la más nueva a la más antigua.
-    $stmt = $pdo->prepare('SELECT r.id_receta, r.titulo, r.descripcion, r.tiempo_minutos, r.imagen,
-                                  c.nombre AS categoria, u.nombre_usuario AS autor
-                           FROM recetas r
-                           JOIN categorias c ON c.id_categoria = r.id_categoria
-                           JOIN usuarios u ON u.id_usuario = r.id_usuario
-                           ORDER BY r.fecha_creacion DESC, r.id_receta DESC');
+    // Categorías para llenar el selector del formulario de filtros.
+    $stmt = $pdo->prepare('SELECT id_categoria, nombre FROM categorias ORDER BY nombre');
     $stmt->execute();
-    // fetchAll devuelve un array con una fila (array asociativo) por receta.
+    $categorias = $stmt->fetchAll();
+
+    // 2. Construir la consulta: se parte de la consulta de todas las recetas
+    //    y se añade una condición por cada filtro que se haya rellenado.
+    //    "WHERE 1 = 1" siempre se cumple; sirve para poder añadir cada filtro con "AND".
+    $sql = 'SELECT r.id_receta, r.titulo, r.descripcion, r.tiempo_minutos, r.imagen,
+                   c.nombre AS categoria, u.nombre_usuario AS autor
+            FROM recetas r
+            JOIN categorias c ON c.id_categoria = r.id_categoria
+            JOIN usuarios u ON u.id_usuario = r.id_usuario
+            WHERE 1 = 1';
+    $parametros = [];
+
+    if ($idCategoria) {
+        $sql .= ' AND r.id_categoria = :categoria';
+        $parametros[':categoria'] = $idCategoria;
+    }
+    if ($texto !== '') {
+        // LIKE con % delante y detrás: el título contiene el texto en cualquier posición.
+        $sql .= ' AND r.titulo LIKE :texto';
+        $parametros[':texto'] = '%' . $texto . '%';
+    }
+    if ($ingrediente !== '') {
+        // La receta debe tener algún ingrediente cuyo nombre contenga el texto buscado.
+        $sql .= ' AND r.id_receta IN (SELECT receta_ingrediente.id_receta
+                                      FROM receta_ingrediente
+                                      JOIN ingredientes ON ingredientes.id_ingrediente = receta_ingrediente.id_ingrediente
+                                      WHERE ingredientes.nombre LIKE :ingrediente)';
+        $parametros[':ingrediente'] = '%' . $ingrediente . '%';
+    }
+
+    $sql .= ' ORDER BY r.fecha_creacion DESC, r.id_receta DESC';
+
+    // Los datos del usuario nunca se concatenan en el SQL: van aparte, como parámetros.
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($parametros);
     $recetas = $stmt->fetchAll();
 } catch (PDOException $e) {
     error_log($e->getMessage());
@@ -27,20 +66,57 @@ require_once __DIR__ . '/header.php';
 ?>
 <h1>Recetas</h1>
 
+<!-- 3. Formulario de filtros por GET: los valores elegidos se mantienen al mostrar los resultados -->
+<form action="listado_recetas.php" method="GET" class="row g-3 align-items-end mb-4">
+    <div class="col-12 col-md-4">
+        <label for="texto" class="form-label">Buscar en el título</label>
+        <input type="text" id="texto" name="texto" class="form-control" placeholder="Ej.: tortilla"
+               value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
+    </div>
+    <div class="col-12 col-md-3">
+        <label for="categoria" class="form-label">Categoría</label>
+        <select id="categoria" name="categoria" class="form-select">
+            <option value="">Todas las categorías</option>
+            <?php foreach ($categorias as $cat): ?>
+                <option value="<?= (int) $cat['id_categoria'] ?>" <?= $cat['id_categoria'] == $idCategoria ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['nombre'], ENT_QUOTES, 'UTF-8') ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-12 col-md-3">
+        <label for="ingrediente" class="form-label">Ingrediente</label>
+        <input type="text" id="ingrediente" name="ingrediente" class="form-control" placeholder="Ej.: huevo"
+               value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
+    </div>
+    <div class="col-12 col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+        <?php if ($hayFiltros): ?>
+            <a href="listado_recetas.php" class="d-block text-center mt-2">Quitar filtros</a>
+        <?php endif; ?>
+    </div>
+</form>
+
 <?php if ($error): ?>
     <p>
         <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
     </p>
+<?php elseif (count($recetas) === 0 && $hayFiltros): ?>
+    <!-- 4. Mensaje cuando los filtros no encuentran ninguna receta -->
+    <p>No hay recetas que coincidan con tu búsqueda. <a href="listado_recetas.php">Ver todas las recetas</a>.</p>
 <?php elseif (count($recetas) === 0): ?>
-    <!-- 2. Mensaje cuando no hay resultados -->
     <p>Todavía no hay recetas. <a href="formulario_receta.php">Crea la primera</a>.</p>
 <?php else: ?>
     <p>
         <?= count($recetas) ?>
-        <?= count($recetas) === 1 ? 'receta publicada' : 'recetas publicadas' ?>.
+        <?php if ($hayFiltros): ?>
+            <?= count($recetas) === 1 ? 'receta encontrada' : 'recetas encontradas' ?>.
+        <?php else: ?>
+            <?= count($recetas) === 1 ? 'receta publicada' : 'recetas publicadas' ?>.
+        <?php endif; ?>
     </p>
 
-    <!-- 3. Una tarjeta por receta, recorriendo el array con foreach -->
+    <!-- Una tarjeta por receta, recorriendo el array con foreach -->
     <div class="row g-4">
         <?php foreach ($recetas as $receta): ?>
             <div class="col-12 col-md-6 col-lg-4">
@@ -51,7 +127,7 @@ require_once __DIR__ . '/header.php';
                     <?php endif; ?>
                     <div class="card-body">
                         <h2 class="card-title h5">
-                            <!-- 4. Enlace a la vista de detalle con el id por GET -->
+                            <!-- Enlace a la vista de detalle con el id por GET -->
                             <a href="receta.php?id=<?= (int) $receta['id_receta'] ?>">
                                 <?= htmlspecialchars($receta['titulo'], ENT_QUOTES, 'UTF-8') ?>
                             </a>
