@@ -1,5 +1,5 @@
 <?php
-// Recetas del usuario con sesión iniciada
+// Recetas del usuario con sesión iniciada (issue #48).
 session_start();
 require_once __DIR__ . '/conexion.php';
 
@@ -8,9 +8,9 @@ if (!isset($_SESSION['id_usuario'])) {
     header('Location: login.php');
     exit;
 }
+
 $recetas = [];
 $error = '';
-
 try {
     // 2. Recuperar solo las recetas del usuario, con su categoría y su tiempo.
     $stmt = $pdo->prepare('SELECT r.id_receta, r.titulo, r.descripcion, r.tiempo_minutos, r.imagen,
@@ -26,6 +26,7 @@ try {
     error_log($e->getMessage()); // El error real solo se guarda en el log
     $error = 'No se han podido cargar tus recetas. Inténtalo más tarde.';
 }
+// Variables que usan header.php (pestaña) y nav.php (enlace activo).
 $titulo = 'Mis recetas';
 $paginaActual = 'mis_recetas';
 require_once __DIR__ . '/header.php';
@@ -73,7 +74,7 @@ require_once __DIR__ . '/header.php';
                     </ul>
                     <div class="card-body">
                         <!-- Editar va por GET (solo muestra el formulario); eliminar va por POST -->
-                        <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar</a>
+                        <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>&amp;volver=mis_recetas">Editar</a>
                         <form class="form-eliminar" action="eliminar_receta.php" method="POST">
                             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
                             <!-- Indica a eliminar_receta.php que vuelva a esta página -->
@@ -85,19 +86,9 @@ require_once __DIR__ . '/header.php';
             </div>
         <?php endforeach; ?>
     </div>
-
-    <script>
-        // Pedir confirmación antes de eliminar.
-        // Hay un formulario por receta, así que se recorren todos con forEach.
-        const formsEliminar = document.querySelectorAll('.form-eliminar');
-        formsEliminar.forEach((form) => {
-            form.addEventListener('submit', (e) => {
-                if (!confirm('¿Seguro que quieres eliminar esta receta? No se puede deshacer.')) {
-                    e.preventDefault();
-                }
-            });
-        });
-    </script>
 <?php endif; ?>
+
+<!-- Confirmación antes de eliminar (JavaScript separado del PHP) -->
+<script src="../JS/eliminar.js"></script>
 
 <?php require_once __DIR__ . '/footer.php'; ?>

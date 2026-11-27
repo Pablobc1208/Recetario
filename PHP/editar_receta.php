@@ -11,8 +11,12 @@ if (!isset($_SESSION['id_usuario'])) {
     exit;
 }
 
+$volverMisRecetas = (($_SERVER['REQUEST_METHOD'] === 'POST'
+    ? ($_POST['volver'] ?? '')
+    : ($_GET['volver'] ?? '')) === 'mis_recetas');
+
 $unidadesValidas = ['g', 'kg', 'ml', 'l', 'ud', 'cucharada', 'cucharadita'];
-$filasVacias = 2; //filas extra para  añadir ingredientes nuevos
+$maxIngredientes = 20; //máximo de filas de ingredientes; las filas nuevas se añaden con JS/ingredientes.js (#17)
 
 //recoge el id de la receta
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -23,9 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (!$idReceta) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'El enlace no es válido.'];
-    header('Location: listado_recetas.php');
+    header('Location: ' . ($volverMisRecetas ? 'mis_recetas.php' : 'listado_recetas.php'));
     exit;
 }
+
+$urlRetorno = $volverMisRecetas ? 'mis_recetas.php' : 'receta.php?id=' . (int) $idReceta;
 
 //buscar la receta para saber si existe y quien es el autor
 $stmt = $pdo->prepare('SELECT id_receta, titulo, descripcion, instrucciones, tiempo_minutos, id_categoria, id_usuario
@@ -35,14 +41,14 @@ $receta = $stmt->fetch();
 
 if (!$receta) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'Esa receta no existe.'];
-    header('Location: listado_recetas.php');
+    header('Location: ' . ($volverMisRecetas ? 'mis_recetas.php' : 'listado_recetas.php'));
     exit;
 }
 
 //solo el autor la edita
 if ($receta['id_usuario'] != $_SESSION['id_usuario']) {
     $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'Solo el autor puede editar esta receta.'];
-    header('Location: receta.php?id=' . $idReceta);
+    header('Location: ' . $urlRetorno);
     exit;
 }
 
@@ -86,6 +92,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!in_array($idCategoria, $idsCategorias)) {
         $errores[] = 'Elige una categoría de la lista.';
     }
+    //el limite de filas tambien se comprueba en el servidor, por si se salta el JavaScript
+    if (count($nombres) > $maxIngredientes) {
+        $errores[] = "Como máximo puedes añadir $maxIngredientes ingredientes.";
+    }
 
     $ingredientes = [];
     $ingredientesValidos = [];
@@ -106,8 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ing['nombre'] === '' || strlen($ing['nombre']) > 100) {
             $errores[] = "Ingrediente $fila: escribe un nombre de hasta 100 caracteres.";
         }
-        if (!is_numeric($ing['cantidad']) || $ing['cantidad'] <= 0) {
-            $errores[] = "Ingrediente $fila: la cantidad debe ser un número mayor que 0.";
+        $cantidadValida = preg_match('/^[0-9]{1,6}(\.[0-9]{1,2})?$/', $ing['cantidad']) === 1
+            && (float) $ing['cantidad'] > 0;
+        if (!$cantidadValida) {
+            $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
         }
         if (!in_array($ing['unidad'], $unidadesValidas)) {
             $errores[] = "Ingrediente $fila: elige una unidad.";
@@ -183,14 +195,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 //al recargar la pagina no se vuelve a enviar el formulario
                 $_SESSION['mensaje'] = ['tipo' => 'exito', 'texto' => "La receta «{$tituloReceta}» se ha actualizado."];
-                header('Location: receta.php?id=' . $idReceta);
+                header('Location: ' . $urlRetorno);
                 exit;
             }
         } catch (PDOException $e) {
             $pdo->rollBack();
             error_log('Error UPDATE receta: ' . $e->getMessage());
             $_SESSION['mensaje'] = ['tipo' => 'error', 'texto' => 'No se ha podido actualizar la receta. Inténtalo de nuevo.'];
-            header('Location: receta.php?id=' . $idReceta);
+            header('Location: ' . $urlRetorno);
             exit;
         }
     }
@@ -212,15 +224,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ingredientes = $stmt->fetchAll();
 }
 
-//filas que se pintan las que hay mas unas vacias para añadir nuevos
-$numFilas = count($ingredientes) + $filasVacias;
+//se pintan los ingredientes que ya tiene la receta; si no tiene ninguno, una fila vacia
+$numFilas = count($ingredientes);
+if ($numFilas === 0) {
+    $numFilas = 1;
+}
 
 $titulo = 'Editar receta';
 $paginaActual = 'recetas';
 require_once __DIR__ . '/header.php';
 ?>
 <h1>Editar «<?= htmlspecialchars($receta['titulo'], ENT_QUOTES, 'UTF-8') ?>»</h1>
-<p>Cambia lo que necesites. Para quitar un ingrediente, deja vacíos su nombre y su cantidad.</p>
+<p>Cambia lo que necesites. Para quitar un ingrediente, pulsa «Quitar»; para añadir otro, «Añadir ingrediente».</p>
 
 <?php if ($errores): ?>
     <ul class="aviso aviso-error" role="alert">
@@ -230,9 +245,10 @@ require_once __DIR__ . '/header.php';
     </ul>
 <?php endif; ?>
 
-<form action="editar_receta.php" method="POST">
+<form action="editar_receta.php" method="POST" id="form-receta">
     <!-- El id viaja oculto para saber qué receta se actualiza. Se vuelve a comprobar el autor en el servidor. -->
     <input type="hidden" name="id_receta" value="<?= (int) $idReceta ?>">
+    <input type="hidden" name="volver" value="<?= $volverMisRecetas ? 'mis_recetas' : '' ?>">
 
     <fieldset>
         <legend>1. Datos de la receta</legend>
@@ -261,27 +277,36 @@ require_once __DIR__ . '/header.php';
     </fieldset>
 
     <fieldset>
-        <legend>2. Ingredientes</legend>
-        <?php for ($i = 0; $i < $numFilas; $i++):
-            $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
-            <p>
-                <label for="ing_nombre_<?= $i ?>">Ingrediente <?= $i + 1 ?></label>
-                <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
-                    value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
+        <legend id="legend-ingredientes">2. Ingredientes</legend>
 
-                <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
-                <input type="text" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
-                    value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+        <!-- PHP pinta los ingredientes que ya tiene la receta; JS/ingredientes.js añade y quita filas (#17). -->
+        <div id="lista-ingredientes" data-maximo="<?= $maxIngredientes ?>">
+            <?php for ($i = 0; $i < $numFilas; $i++):
+                $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
+                <p class="fila-ingrediente">
+                    <label for="ing_nombre_<?= $i ?>" class="etiqueta-ingrediente">Ingrediente <?= $i + 1 ?></label>
+                    <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
+                        value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
-                <label for="ing_unidad_<?= $i ?>">Unidad</label>
-                <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
-                    <option value="">Unidad</option>
-                    <?php foreach ($unidadesValidas as $u): ?>
-                        <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </p>
-        <?php endfor; ?>
+                    <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
+                    <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
+                        inputmode="decimal" min="0.01" max="999999.99" step="0.01"
+                        value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+
+                    <label for="ing_unidad_<?= $i ?>">Unidad</label>
+                    <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
+                        <option value="">Unidad</option>
+                        <?php foreach ($unidadesValidas as $u): ?>
+                            <option value="<?= $u ?>" <?= $u === $ing['unidad'] ? 'selected' : '' ?>><?= $u ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <button type="button" class="btn-quitar">Quitar</button>
+                </p>
+            <?php endfor; ?>
+        </div>
+
+        <button type="button" id="btn-anadir">+ Añadir ingrediente</button>
     </fieldset>
 
     <fieldset>
@@ -294,4 +319,6 @@ require_once __DIR__ . '/header.php';
 </form>
 
 <p><a href="receta.php?id=<?= (int) $idReceta ?>">Cancelar y volver a la receta</a></p>
+<script defer src="../JS/validarformulario_receta.js"></script>
+<script defer src="../JS/ingredientes.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
