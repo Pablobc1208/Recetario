@@ -18,6 +18,8 @@ $paginaActual = $paginaActual ?? '';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Open+Sans:wght@400;600&display=swap">
+    <!-- Estilos del gestor de cookies (Vanilla Cookie Consent) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3.1.0/dist/cookieconsent.css">
     <link rel="stylesheet" href="../CSS/style.css">
 </head>
 

@@ -54,14 +54,28 @@ function aplicarVista(vista) {
 }
 
 /**
- * Cambia la vista al pulsar un botón y guarda la elección en la cookie.
+ * Indica si el usuario ha aceptado las cookies de preferencias
+ * en el gestor de cookies (JS/consentimiento-cookies.js).
+ * @returns {boolean}
+ */
+function hayPermisoPreferencias() {
+    //si el gestor no ha cargado (p. ej. sin conexión al CDN) no se guarda nada
+    if (!window.CookieConsent) {
+        return false;
+    }
+    return window.CookieConsent.acceptedCategory('preferencias');
+}
+
+/**
+ * Cambia la vista al pulsar un botón y, si hay permiso, guarda la elección en la cookie.
  * @param {string} vista
  */
 function cambiarVista(vista) {
     aplicarVista(vista);
 
     //window.navigator.cookieEnabled es false si el navegador bloquea las cookies
-    if (window.navigator.cookieEnabled) {
+    //y por el RGPD solo se guarda si el usuario ha aceptado las de preferencias
+    if (window.navigator.cookieEnabled && hayPermisoPreferencias()) {
         guardarCookie(NOMBRE_COOKIE, vista);
     }
 }
