@@ -87,7 +87,6 @@ require_once __DIR__ . '/header.php';
                 </div>
             <?php endforeach; ?>
         </div>
-        <p class="mt-4"><a href="listado_recetas.php">Ver todas las recetas</a></p>
     <?php endif; ?>
 </section>
 
