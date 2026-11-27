@@ -41,17 +41,17 @@ $ingredientes = [];
 // GET solo muestra el formulario; POST también procesa y valida los datos recibidos.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //is_string comprueba que llega texto si se manda por ej un array se trata como vacio
-    $tituloReceta  = is_string($_POST['titulo'] ?? null) ? trim($_POST['titulo']) : '';
-    $descripcion   = is_string($_POST['descripcion'] ?? null) ? trim($_POST['descripcion']) : '';
+    $tituloReceta = is_string($_POST['titulo'] ?? null) ? trim($_POST['titulo']) : '';
+    $descripcion = is_string($_POST['descripcion'] ?? null) ? trim($_POST['descripcion']) : '';
     $tiempoMinutos = is_string($_POST['tiempo_minutos'] ?? null) ? trim($_POST['tiempo_minutos']) : '';   // texto, para volver a mostrarlo si hay errores
     $instrucciones = is_string($_POST['instrucciones'] ?? null) ? trim($_POST['instrucciones']) : '';
-    $idCategoria   = filter_input(INPUT_POST, 'id_categoria', FILTER_VALIDATE_INT);
-    $tiempoValido  = filter_input(INPUT_POST, 'tiempo_minutos', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $idCategoria = filter_input(INPUT_POST, 'id_categoria', FILTER_VALIDATE_INT);
+    $tiempoValido = filter_input(INPUT_POST, 'tiempo_minutos', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     // Los ingredientes llegan como tres listas paralelas: nombre, cantidad y unidad.
-    $nombres    = $_POST['ing_nombre'] ?? [];
+    $nombres = $_POST['ing_nombre'] ?? [];
     $cantidades = $_POST['ing_cantidad'] ?? [];
-    $unidades   = $_POST['ing_unidad'] ?? [];
+    $unidades = $_POST['ing_unidad'] ?? [];
 
     //estos tres sí tienen que ser arrays si no lo son se descartan y saltará "Añade al menos un ingrediente".
     if (!is_array($nombres) || !is_array($cantidades) || !is_array($unidades)) {
@@ -83,11 +83,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($nombres as $i => $nombre) {
         //cada elemento tiene que ser texto si no lo es se trata como vacio
         $cantidad = $cantidades[$i] ?? '';
-        $unidad   = $unidades[$i] ?? '';
+        $unidad = $unidades[$i] ?? '';
         $ing = [
-            'nombre'   => is_string($nombre) ? trim($nombre) : '',
+            'nombre' => is_string($nombre) ? trim($nombre) : '',
             'cantidad' => is_string($cantidad) ? trim($cantidad) : '',
-            'unidad'   => is_string($unidad) ? $unidad : '',
+            'unidad' => is_string($unidad) ? $unidad : '',
         ];
         $ingredientes[] = $ing;
 
@@ -101,8 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($ing['nombre'] === '' || strlen($ing['nombre']) > 100) {
             $errores[] = "Ingrediente $fila: escribe un nombre de hasta 100 caracteres.";
         }
-        if (!is_numeric($ing['cantidad']) || $ing['cantidad'] <= 0) {
-            $errores[] = "Ingrediente $fila: la cantidad debe ser un número mayor que 0.";
+        $cantidadValida = preg_match('/^[0-9]{1,6}(\.[0-9]{1,2})?$/', $ing['cantidad']) === 1
+            && (float) $ing['cantidad'] > 0;
+        if (!$cantidadValida) {
+            $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
         }
         if (!in_array($ing['unidad'], $unidadesValidas)) {
             $errores[] = "Ingrediente $fila: elige una unidad.";
@@ -126,19 +128,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('INSERT INTO recetas (titulo, descripcion, instrucciones, tiempo_minutos, id_categoria, id_usuario)
                                    VALUES (:titulo, :descripcion, :instrucciones, :tiempo_minutos, :id_categoria, :id_usuario)');
             $stmt->execute([
-                ':titulo'         => $tituloReceta,
-                ':descripcion'    => $descripcion,
-                ':instrucciones'  => $instrucciones,
+                ':titulo' => $tituloReceta,
+                ':descripcion' => $descripcion,
+                ':instrucciones' => $instrucciones,
                 ':tiempo_minutos' => $tiempoValido,
-                ':id_categoria'   => $idCategoria,
-                ':id_usuario'     => $_SESSION['id_usuario'],
+                ':id_categoria' => $idCategoria,
+                ':id_usuario' => $_SESSION['id_usuario'],
             ]);
             $idReceta = $pdo->lastInsertId();
 
             // Se preparan una vez y se ejecutan para cada ingrediente.
             $buscarIngrediente = $pdo->prepare('SELECT id_ingrediente FROM ingredientes WHERE nombre = :nombre');
-            $crearIngrediente  = $pdo->prepare('INSERT INTO ingredientes (nombre) VALUES (:nombre)');
-            $unirIngrediente   = $pdo->prepare('INSERT INTO receta_ingrediente (id_receta, id_ingrediente, cantidad, unidad)
+            $crearIngrediente = $pdo->prepare('INSERT INTO ingredientes (nombre) VALUES (:nombre)');
+            $unirIngrediente = $pdo->prepare('INSERT INTO receta_ingrediente (id_receta, id_ingrediente, cantidad, unidad)
                                                 VALUES (:id_receta, :id_ingrediente, :cantidad, :unidad)');
 
             $idsUsados = [];
@@ -164,10 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // La cantidad y la unidad se guardan en la tabla intermedia.
                 $unirIngrediente->execute([
-                    ':id_receta'      => $idReceta,
+                    ':id_receta' => $idReceta,
                     ':id_ingrediente' => $idIngrediente,
-                    ':cantidad'       => $ing['cantidad'],
-                    ':unidad'         => $ing['unidad'],
+                    ':cantidad' => $ing['cantidad'],
+                    ':unidad' => $ing['unidad'],
                 ]);
             }
 
@@ -176,7 +178,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
 
                 // 4. Feedback: guarda un mensaje temporal y redirige para no repetir el envío al recargar.
-                $_SESSION['mensaje'] = ['tipo' => 'exito', 'texto' => "La receta «{$tituloReceta}» se ha guardado correctamente."];
+                $_SESSION['mensaje'] = [
+                    'tipo' => 'exito',
+                    'texto' => "La receta «{$tituloReceta}» se ha creado correctamente.",
+                ];
                 header('Location: formulario_receta.php');
                 exit;
             }
@@ -211,14 +216,14 @@ require_once __DIR__ . '/header.php';
     </ul>
 <?php endif; ?>
 
-<form action="formulario_receta.php" method="POST">
+<form action="formulario_receta.php" method="POST" id="form-receta">
     <fieldset>
         <legend>1. Datos de la receta</legend>
         <p>Escribe un nombre, una breve descripción, el tiempo y la categoría.</p>
 
         <label for="titulo">Nombre de la receta *</label>
-        <input type="text" id="titulo" name="titulo" maxlength="150" required
-            placeholder="Ej.: Tortilla de patatas" value="<?= htmlspecialchars($tituloReceta, ENT_QUOTES, 'UTF-8') ?>">
+        <input type="text" id="titulo" name="titulo" maxlength="150" required placeholder="Ej.: Tortilla de patatas"
+            value="<?= htmlspecialchars($tituloReceta, ENT_QUOTES, 'UTF-8') ?>">
 
         <label for="descripcion">Descripción *</label>
         <input type="text" id="descripcion" name="descripcion" maxlength="255" required
@@ -226,8 +231,8 @@ require_once __DIR__ . '/header.php';
             value="<?= htmlspecialchars($descripcion, ENT_QUOTES, 'UTF-8') ?>">
 
         <label for="tiempo_minutos">Tiempo de preparación (minutos) *</label>
-        <input type="number" id="tiempo_minutos" name="tiempo_minutos" min="1" step="1" required
-            placeholder="Ej.: 40" value="<?= htmlspecialchars($tiempoMinutos, ENT_QUOTES, 'UTF-8') ?>">
+        <input type="number" id="tiempo_minutos" name="tiempo_minutos" min="1" step="1" required placeholder="Ej.: 40"
+            value="<?= htmlspecialchars($tiempoMinutos, ENT_QUOTES, 'UTF-8') ?>">
 
         <label for="id_categoria">Categoría *</label>
         <select id="id_categoria" name="id_categoria" required>
@@ -241,19 +246,20 @@ require_once __DIR__ . '/header.php';
     </fieldset>
 
     <fieldset>
-        <legend>2. Ingredientes</legend>
+        <legend id="legend-ingredientes">2. Ingredientes</legend>
         <p>Añade al menos uno. En cada fila indica el ingrediente, la cantidad y la unidad.</p>
         <?php for ($i = 0; $i < $numFilas; $i++):
             // Si no llegó una fila para esta posición, se prepara una vacía.
             $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
             <p>
                 <label for="ing_nombre_<?= $i ?>">Ingrediente <?= $i + 1 ?></label>
-                <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
-                    placeholder="Ej.: Harina" value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
+                <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100" placeholder="Ej.: Harina"
+                    value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
                 <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
-                <input type="text" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]"
-                    inputmode="decimal" placeholder="Ej.: 200" value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
+                <input type="number" id="ing_cantidad_<?= $i ?>" name="ing_cantidad[]" inputmode="decimal" min="0.01"
+                    max="999999.99" step="0.01" placeholder="Ej.: 200"
+                    value="<?= htmlspecialchars($ing['cantidad'], ENT_QUOTES, 'UTF-8') ?>">
 
                 <label for="ing_unidad_<?= $i ?>">Unidad</label>
                 <select id="ing_unidad_<?= $i ?>" name="ing_unidad[]">
@@ -276,4 +282,6 @@ require_once __DIR__ . '/header.php';
 
     <button type="submit">Guardar receta</button>
 </form>
+
+<script defer src="../JS/validarformulario_receta.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
