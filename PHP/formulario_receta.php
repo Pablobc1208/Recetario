@@ -107,10 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             && (float) $ing['cantidad'] > 0;
         if (!$cantidadValida) {
             $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
-        $cantidadValida = preg_match('/^[0-9]{1,6}(\.[0-9]{1,2})?$/', $ing['cantidad']) === 1
-            && (float) $ing['cantidad'] > 0;
-        if (!$cantidadValida) {
-            $errores[] = "Ingrediente $fila: la cantidad debe ser mayor que 0, con hasta 6 cifras enteras y 2 decimales usando punto.";
         }
         if (!in_array($ing['unidad'], $unidadesValidas)) {
             $errores[] = "Ingrediente $fila: elige una unidad.";
@@ -184,10 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
 
                 // 4. Feedback: guarda un mensaje temporal y redirige para no repetir el envío al recargar.
-                $_SESSION['mensaje'] = [
-                    'tipo' => 'exito',
-                    'texto' => "La receta «{$tituloReceta}» se ha creado correctamente.",
-                ];
                 $_SESSION['mensaje'] = [
                     'tipo' => 'exito',
                     'texto' => "La receta «{$tituloReceta}» se ha creado correctamente.",
