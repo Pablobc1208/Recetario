@@ -66,11 +66,12 @@ jobs:
           node-version: "22"
       - run: npm install --no-audit --no-fund
       - name: Generar el HTML de las páginas con PHP
-        # Se ejecuta cada página que incluye la cabecera común y se guarda su HTML.
+        # Se ejecuta cada página que incluye la cabecera común (con include o require_once)
+        # y no necesita la base de datos (no usa conexion.php), y se guarda su HTML.
         # Si PHP muestra algún aviso (por ejemplo, un include que no existe), falla.
         run: |
           mkdir -p build/html
-          for pagina in $(grep -rlE "include.*header\.php" --include="*.php" . | grep -v node_modules); do
+          for pagina in $(grep -rlE "(include|require_once).*header\.php" --include="*.php" . | grep -v node_modules | xargs grep -L "conexion\.php"); do
             salida="build/html/$(echo "${pagina#./}" | tr '/' '_').html"
             echo "Generando $pagina"
             php -d display_errors=stderr -d error_reporting=E_ALL "$pagina" > "$salida" 2> errores.txt
