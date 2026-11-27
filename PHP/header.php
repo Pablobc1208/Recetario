@@ -18,7 +18,7 @@ $paginaActual = $paginaActual ?? '';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Open+Sans:wght@400;600&display=swap">
-    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="../CSS/style.css">
 </head>
 
 <body>
@@ -26,4 +26,4 @@ $paginaActual = $paginaActual ?? '';
         <?php include __DIR__ . '/nav.php'; ?>
     </header>
     <main class="container contenido">
-<?php include __DIR__ . '/mensajes.php'; ?>
+        <?php include __DIR__ . '/mensajes.php'; ?>
