@@ -71,7 +71,7 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-4">
         <label for="texto" class="form-label">Buscar en el título</label>
         <input type="text" id="texto" name="texto" class="form-control" placeholder="Ej.: tortilla"
-               value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
+            value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-3">
         <label for="categoria" class="form-label">Categoría</label>
@@ -87,7 +87,7 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-3">
         <label for="ingrediente" class="form-label">Ingrediente</label>
         <input type="text" id="ingrediente" name="ingrediente" class="form-control" placeholder="Ej.: huevo"
-               value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
+            value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-2">
         <button type="submit" class="btn btn-primary w-100">Buscar</button>
@@ -107,6 +107,13 @@ require_once __DIR__ . '/header.php';
 <?php elseif (count($recetas) === 0): ?>
     <p>Todavía no hay recetas. <a href="formulario_receta.php">Crea la primera</a>.</p>
 <?php else: ?>
+    <!-- botones para elegir la vista empiezan ocultos y los muestra JS/cookies.js -->
+    <div id="selector-vista" class="d-none mb-3">
+        <span>Ver como:</span>
+        <button type="button" id="vista-cuadricula" class="btn btn-outline-secondary btn-sm">Cuadrícula</button>
+        <button type="button" id="vista-lista" class="btn btn-outline-secondary btn-sm">Lista</button>
+    </div>
+
     <p>
         <?= count($recetas) ?>
         <?php if ($hayFiltros): ?>
@@ -116,8 +123,9 @@ require_once __DIR__ . '/header.php';
         <?php endif; ?>
     </p>
 
-    <!-- Una tarjeta por receta, recorriendo el array con foreach -->
-    <div class="row g-4">
+    <!-- Una tarjeta por receta, recorriendo el array con foreach.
+         El id lo usa JS/cookies.js para añadir o quitar la clase "vista-lista". -->
+    <div id="listado-recetas" class="row g-4">
         <?php foreach ($recetas as $receta): ?>
             <div class="col-12 col-md-6 col-lg-4">
                 <article class="card h-100">
@@ -152,5 +160,8 @@ require_once __DIR__ . '/header.php';
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
+<!-- guarda en una cookie la vista elegida y la aplica al cargar. -->
+<script src="../JS/cookies.js"></script>
 
 <?php require_once __DIR__ . '/footer.php'; ?>
