@@ -93,3 +93,14 @@ h1, h2, h3 {
         padding-left: 0.5rem;
     }
 }
+
+.campo-invalido {
+    border: 2px solid #dc3545;
+}
+
+.error-campo {
+    display: block;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}

@@ -6,21 +6,7 @@ const patronIngrediente = /^.{1,100}$/;              // entre 1 y 100 caracteres
 const patronCantidad    = /^[0-9]{1,6}(\.[0-9]{1,2})?$/; // número con hasta 2 decimales, separados por punto
 
 const formulario = document.querySelector('#form-receta');
-
-// Los campos de cantidad solo admiten valores numéricos. Esta protección evita
-// escribir letras o separadores no válidos antes de que se envíe el formulario.
-const cantidadesNumericas = formulario.querySelectorAll('input[name="ing_cantidad[]"]');
-cantidadesNumericas.forEach((cantidad) => {
-    cantidad.addEventListener('beforeinput', function (event) {
-        if (event.data !== null && /[^0-9.]/.test(event.data)) {
-            event.preventDefault();
-        }
-    });
-
-    cantidad.addEventListener('input', function () {
-        cantidad.value = cantidad.value.replace(/[^0-9.]/g, '');
-    });
-});
+formulario.setAttribute('novalidate', '');
 
 // Crea un mensaje de error justo después del elemento indicado y lo marca como inválido.
 function mostrarError(elemento, mensaje) {
@@ -28,7 +14,7 @@ function mostrarError(elemento, mensaje) {
     error.classList.add('error-campo');
     error.textContent = mensaje;   // textContent: el mensaje se trata como texto, nunca como HTML
     elemento.classList.add('campo-invalido');
-    elemento.insertAdjacentElement('afterend', error);
+    elemento.parentNode.insertBefore(error, elemento.nextSibling);
 }
 
 // Quita los errores de un envío anterior antes de volver a validar.

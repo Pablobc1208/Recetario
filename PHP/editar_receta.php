@@ -238,7 +238,7 @@ require_once __DIR__ . '/header.php';
     </ul>
 <?php endif; ?>
 
-<form action="editar_receta.php" method="POST">
+<form action="editar_receta.php" method="POST" id="form-receta">
     <!-- El id viaja oculto para saber qué receta se actualiza. Se vuelve a comprobar el autor en el servidor. -->
     <input type="hidden" name="id_receta" value="<?= (int) $idReceta ?>">
     <input type="hidden" name="volver" value="<?= $volverMisRecetas ? 'mis_recetas' : '' ?>">
@@ -270,7 +270,7 @@ require_once __DIR__ . '/header.php';
     </fieldset>
 
     <fieldset>
-        <legend>2. Ingredientes</legend>
+        <legend id="legend-ingredientes">2. Ingredientes</legend>
         <?php for ($i = 0; $i < $numFilas; $i++):
             $ing = $ingredientes[$i] ?? ['nombre' => '', 'cantidad' => '', 'unidad' => '']; ?>
             <p>
@@ -304,4 +304,5 @@ require_once __DIR__ . '/header.php';
 </form>
 
 <p><a href="receta.php?id=<?= (int) $idReceta ?>">Cancelar y volver a la receta</a></p>
+<script defer src="../JS/validarformulario_receta.js"></script>
 <?php require_once __DIR__ . '/footer.php'; ?>
