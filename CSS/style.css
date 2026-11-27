@@ -1,10 +1,14 @@
 /* ===== Guía de estilo: colores y tipografías =====
    Cambiad estos valores si la guía de estilo final es distinta. */
 :root {
-    --color-principal: #c0392b;   /* rojo tomate: botones, enlaces activos */
-    --color-secundario: #e67e22;  /* naranja: detalles y hover */
-    --color-fondo: #fdf8f2;       /* crema: fondo de la página */
-    --color-texto: #2d2a26;       /* casi negro: texto */
+    --color-principal: #c0392b;
+    /* rojo tomate: botones, enlaces activos */
+    --color-secundario: #e67e22;
+    /* naranja: detalles y hover */
+    --color-fondo: #fdf8f2;
+    /* crema: fondo de la página */
+    --color-texto: #2d2a26;
+    /* casi negro: texto */
     --color-claro: #fff;
     --fuente-titulos: 'Lora', georgia, serif;
     --fuente-texto: 'Open Sans', arial, sans-serif;
@@ -22,13 +26,16 @@ body {
     font-family: var(--fuente-texto);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: var(--fuente-titulos);
     color: var(--color-principal);
 }
 
 .contenido {
-    flex: 1; /* empuja el pie hacia abajo */
+    flex: 1;
+    /* empuja el pie hacia abajo */
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
@@ -62,7 +69,8 @@ h1, h2, h3 {
 }
 
 .navegacion .navbar-toggler-icon {
-    filter: invert(1); /* icono blanco sobre fondo rojo */
+    filter: invert(1);
+    /* icono blanco sobre fondo rojo */
 }
 
 /* ===== Mensajes ===== */
@@ -103,4 +111,18 @@ h1, h2, h3 {
     color: #dc3545;
     font-size: 0.875rem;
     margin-top: 0.25rem;
+}
+
+/* ===== GIF===== */
+.animacion-pasos {
+    max-width: 480px;
+}
+
+.animacion-pasos img {
+    border-radius: 16px;
+}
+
+.animacion-pasos figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
 }

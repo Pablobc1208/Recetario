@@ -45,7 +45,17 @@ require_once __DIR__ . '/header.php';
     <?php endif; ?>
 </section>
 
-<!-- 3. Últimas recetas publicadas -->
+<!-- gif -->
+<section class="mb-5">
+    <h2>Cocinar paso a paso</h2>
+    <figure class="animacion-pasos">
+        <img src="../docs/img/pasos-receta.webp" class="img-fluid" width="480" height="320" loading="lazy"
+            alt="Animación de los pasos de una receta: 1, preparar los ingredientes; 2, cortarlos; 3, cocinarlos en la sartén; 4, servir el plato.">
+        <figcaption>Preparar, cortar, cocinar y servir: así de fácil es seguir una receta del Recetario.</figcaption>
+    </figure>
+</section>
+
+<!-- 4. Últimas recetas publicadas -->
 <section>
     <h2>Últimas recetas</h2>
 
