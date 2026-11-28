@@ -63,6 +63,6 @@ require_once __DIR__ . '/header.php';
     <button type="submit">Guardar</button>
 </form>
 
-<p><a href="ingredientes.php">Volver al listado</a></p>
+<p><a href="ingredientes.php" class="btn btn-outline-primary">Volver al listado</a></p>
 
 <?php require_once __DIR__ . '/footer.php'; ?>

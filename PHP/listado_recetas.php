@@ -139,7 +139,8 @@ require_once __DIR__ . '/header.php';
     <p>No hay recetas que coincidan con tu búsqueda.</p>
     <a href="listado_recetas.php" class="btn btn-outline-primary">Ver todas las recetas</a>
 <?php elseif (count($recetas) === 0): ?>
-    <p>Todavía no hay recetas. <a href="formulario_receta.php">Crea la primera</a>.</p>
+    <p>Todavía no hay recetas.</p>
+    <a href="formulario_receta.php" class="btn btn-primary">Crea la primera</a>
 <?php else: ?>
     <!-- botones para elegir la vista empiezan ocultos y los muestra JS/cookies.js -->
     <div id="selector-vista" class="d-none mb-3">

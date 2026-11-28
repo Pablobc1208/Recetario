@@ -37,7 +37,8 @@ require_once __DIR__ . '/header.php';
     <p><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
 <?php elseif (count($recetas) === 0): ?>
     <!-- 4. Mensaje cuando el usuario todavía no tiene recetas -->
-    <p>Todavía no has publicado ninguna receta. <a href="formulario_receta.php">Crea la primera</a>.</p>
+    <p>Todavía no has publicado ninguna receta.</p>
+    <a href="formulario_receta.php" class="btn btn-primary">Crea la primera</a>
 <?php else: ?>
     <p>
         <?= count($recetas) ?>

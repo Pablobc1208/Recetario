@@ -107,7 +107,7 @@ require_once __DIR__ . '/header.php';
     <p><?= nl2br(htmlspecialchars($receta['instrucciones'], ENT_QUOTES, 'UTF-8')) ?></p>
 <?php endif; ?>
 
-<p><a href="listado_recetas.php">Volver al listado</a></p>
+<p><a href="listado_recetas.php" class="btn btn-outline-primary">Volver al listado</a></p>
 
 <script src="../JS/raciones.js"></script>
 <script src="../JS/eliminar.js"></script>
