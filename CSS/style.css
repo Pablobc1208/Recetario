@@ -1,8 +1,8 @@
-/* ===== Guía de estilo: colores y tipografías =====
-   Cambiad estos valores si la guía de estilo final es distinta. */
 :root {
     --color-principal: #c0392b;
     /* rojo tomate: botones, enlaces activos */
+    --color-principal-oscuro: #962d22;
+    /* rojo más oscuro: hover de botones */
     --color-secundario: #e67e22;
     /* naranja: detalles y hover */
     --color-fondo: #fdf8f2;
@@ -10,12 +10,21 @@
     --color-texto: #2d2a26;
     /* casi negro: texto */
     --color-claro: #fff;
+    --color-borde: #e8ddd0;
+    /* beige: bordes de tarjetas y campos */
+    --color-error: #dc3545;
+    /* rojo de error (el mismo que Bootstrap) */
+    --color-error-fondo: #fdecea;
     --fuente-titulos: 'Lora', georgia, serif;
     --fuente-texto: 'Open Sans', arial, sans-serif;
+    --radio: 0.5rem;
+    /* esquinas redondeadas */
+    --sombra: 0 2px 8px rgb(0 0 0 / 8%);
+    --sombra-hover: 0 6px 16px rgb(0 0 0 / 14%);
     --transicion: 0.2s ease;
 }
 
-/* ===== Base ===== */
+/* ===== 2. Base ===== */
 body {
     display: flex;
     flex-direction: column;
@@ -33,6 +42,14 @@ h3 {
     color: var(--color-principal);
 }
 
+h1 {
+    margin-bottom: 1rem;
+}
+
+h2 {
+    margin-top: 1.5rem;
+}
+
 .contenido {
     flex: 1;
     /* empuja el pie hacia abajo */
@@ -40,7 +57,7 @@ h3 {
     padding-bottom: 2rem;
 }
 
-/* ===== Cabecera y navegación ===== */
+/* ===== 3. Cabecera y navegación ===== */
 .navegacion {
     background-color: var(--color-principal);
 }
@@ -48,6 +65,11 @@ h3 {
 .navegacion .logo {
     font-family: var(--fuente-titulos);
     font-weight: 700;
+    color: var(--color-claro);
+}
+
+.navegacion .logo:hover,
+.navegacion .logo:focus {
     color: var(--color-claro);
 }
 
@@ -73,12 +95,339 @@ h3 {
     /* icono blanco sobre fondo rojo */
 }
 
-/* ===== Mensajes ===== */
+/* ===== 4. Botones =====
+   Bootstrap usa variables propias (--bs-btn-...) en cada botón: cambiándolas,
+   .btn-primary y .btn-outline-primary toman los colores de la guía. */
+.btn-primary {
+    --bs-btn-bg: var(--color-principal);
+    --bs-btn-border-color: var(--color-principal);
+    --bs-btn-hover-bg: var(--color-principal-oscuro);
+    --bs-btn-hover-border-color: var(--color-principal-oscuro);
+    --bs-btn-active-bg: var(--color-principal-oscuro);
+    --bs-btn-active-border-color: var(--color-principal-oscuro);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--color-principal);
+    --bs-btn-border-color: var(--color-principal);
+    --bs-btn-hover-bg: var(--color-principal);
+    --bs-btn-hover-border-color: var(--color-principal);
+    --bs-btn-active-bg: var(--color-principal);
+    --bs-btn-active-border-color: var(--color-principal);
+}
+
+/* Botones de formulario sin clases de Bootstrap (formularios de receta, categorías...).
+   Se excluyen los de Bootstrap (.btn) y el botón del menú móvil. */
+.contenido button:not(.btn, .navbar-toggler) {
+    padding: 0.5rem 1.25rem;
+    border: 2px solid var(--color-principal);
+    border-radius: var(--radio);
+    background-color: var(--color-principal);
+    color: var(--color-claro);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transicion), border-color var(--transicion), color var(--transicion);
+}
+
+.contenido button:not(.btn, .navbar-toggler):hover,
+.contenido button:not(.btn, .navbar-toggler):focus-visible {
+    border-color: var(--color-principal-oscuro);
+    background-color: var(--color-principal-oscuro);
+}
+
+/* Clase reutilizable: botón secundario (fondo transparente y borde del color principal).
+   La usan «Añadir ingrediente», «Quitar» y «Eliminar». */
+.contenido .btn-secundario,
+.contenido #btn-anadir,
+.contenido .btn-quitar,
+.contenido .form-eliminar button {
+    background-color: transparent;
+    color: var(--color-principal);
+}
+
+.contenido .btn-secundario:hover,
+.contenido #btn-anadir:hover,
+.contenido .btn-quitar:hover,
+.contenido .form-eliminar button:hover {
+    background-color: var(--color-principal);
+    color: var(--color-claro);
+}
+
+.contenido button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== 5. Enlaces, imágenes y listas ===== */
+.contenido a:not(.btn) {
+    color: var(--color-principal);
+    text-decoration-color: var(--color-secundario);
+    transition: color var(--transicion);
+}
+
+.contenido a:not(.btn):hover,
+.contenido a:not(.btn):focus {
+    color: var(--color-principal-oscuro);
+}
+
+/* Las imágenes nunca se salen de su contenedor. */
+.contenido img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Listas sueltas de la página (categorías, ingredientes, ingredientes de una receta). */
+.contenido>ul:not(.aviso) {
+    padding: 1rem 1rem 1rem 2.25rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background-color: var(--color-claro);
+}
+
+.contenido>ul:not(.aviso) li {
+    padding: 0.25rem 0;
+}
+
+/* ===== 6. Mensajes y avisos ===== */
 .mensaje {
     margin-bottom: 1.5rem;
 }
 
-/* ===== Pie ===== */
+/* Lista de errores que muestran los formularios al enviarse con datos incorrectos. */
+.aviso {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radio);
+    list-style: none;
+}
+
+.aviso-error {
+    border-left: 4px solid var(--color-error);
+    background-color: var(--color-error-fondo);
+    color: var(--color-texto);
+}
+
+/* Errores de validación en el navegador (JS/validarformulario_receta.js, #16). */
+.campo-invalido {
+    border: 2px solid var(--color-error) !important;
+}
+
+.error-campo {
+    display: block;
+    color: var(--color-error);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* ===== 7. Tarjetas de receta (inicio, listado y mis recetas) ===== */
+.card {
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    overflow: hidden;
+    /* la imagen respeta las esquinas redondeadas */
+    box-shadow: var(--sombra);
+    transition: transform var(--transicion), box-shadow var(--transicion);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    /* recorta la imagen sin deformarla */
+}
+
+.card-title a {
+    text-decoration: none;
+}
+
+.card-title a:hover {
+    text-decoration: underline;
+}
+
+/* Botones de editar y eliminar dentro de la tarjeta (mis recetas). */
+.card .form-eliminar {
+    display: inline-block;
+    margin-left: 0.75rem;
+}
+
+/* ===== 8. Listado: filtros y vista en lista (#19) ===== */
+#selector-vista span {
+    margin-right: 0.5rem;
+}
+
+#selector-vista .btn.active {
+    border-color: var(--color-principal);
+    background-color: var(--color-principal);
+    color: var(--color-claro);
+}
+
+/* Vista en lista: una receta por fila.
+   flex-basis 100% gana a los anchos de las columnas de Bootstrap (col-md-6, col-lg-4). */
+.vista-lista>div {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ===== 9. Detalle de receta ===== */
+/* La imagen de la receta (va suelta dentro de .contenido). */
+.contenido>img {
+    display: block;
+    max-height: 400px;
+    margin-bottom: 1.5rem;
+    border-radius: var(--radio);
+    object-fit: cover;
+}
+
+/* Calculadora de raciones (#18). */
+#raciones {
+    display: inline-block;
+    width: 5rem;
+    margin: 0 0.5rem;
+}
+
+/* Las cantidades que recalcula JS/raciones.js se resaltan. */
+.cantidad {
+    font-weight: 700;
+    color: var(--color-principal);
+}
+
+/* Botón «Eliminar receta» en el detalle. */
+.contenido>.form-eliminar {
+    margin-bottom: 1.5rem;
+}
+
+/* ===== 10. Formularios ===== */
+/* Bloques del formulario de receta (1. Datos, 2. Ingredientes, 3. Preparación). */
+.contenido fieldset {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem 1.25rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background-color: var(--color-claro);
+}
+
+/* Bootstrap pone la leyenda flotando a todo el ancho: se devuelve a su sitio. */
+.contenido legend {
+    float: none;
+    width: auto;
+    padding: 0 0.5rem;
+    font-family: var(--fuente-titulos);
+    font-size: 1.25rem;
+    color: var(--color-principal);
+}
+
+.contenido form label {
+    display: block;
+    margin: 0.75rem 0 0.25rem;
+    font-weight: 600;
+}
+
+/* Campos sin clases de Bootstrap: se les da el mismo aspecto que .form-control.
+   Los que ya tienen .form-control o .form-select (login, filtros) no se tocan. */
+.contenido input[type="text"]:not(.form-control),
+.contenido input[type="number"]:not(.form-control),
+.contenido input[type="email"]:not(.form-control),
+.contenido input[type="password"]:not(.form-control),
+.contenido select:not(.form-select),
+.contenido textarea:not(.form-control) {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background-color: var(--color-claro);
+    color: var(--color-texto);
+    font: inherit;
+}
+
+/* Al entrar en un campo se marca con el color de la guía (también en los de Bootstrap). */
+.contenido input:focus,
+.contenido select:focus,
+.contenido textarea:focus {
+    border-color: var(--color-secundario);
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(230 126 34 / 25%);
+}
+
+/* El botón de guardar se separa del último bloque. */
+.contenido form>button[type="submit"] {
+    margin-top: 0.5rem;
+}
+
+/* Páginas de login y registro: todo el bloque centrado y más grande.
+   .pagina-sesion envuelve el título, los errores, el formulario y el enlace de abajo. */
+.pagina-sesion {
+    max-width: 34rem;
+    margin: 1.5rem auto;
+    text-align: center;
+}
+
+.formulario-sesion {
+    padding: 2rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio);
+    background-color: var(--color-claro);
+    box-shadow: var(--sombra);
+    text-align: left;
+    /* los campos y sus etiquetas, alineados a la izquierda */
+}
+
+.formulario-sesion .form-label {
+    font-size: 1.05rem;
+}
+
+.formulario-sesion .form-control {
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+}
+
+/* Botón «Entrar» / «Registrarme»: ocupa todo el ancho y es más grande. */
+.formulario-sesion .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.pagina-sesion .alert {
+    text-align: left;
+}
+
+/* ===== 11. Filas de ingredientes (#17) =====
+   En móvil cada campo va debajo del anterior. En pantallas medianas se colocan
+   en una cuadrícula (ver media queries al final). */
+.fila-ingrediente {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--color-borde);
+}
+
+.fila-ingrediente .btn-quitar {
+    margin-top: 0.75rem;
+}
+
+#btn-anadir {
+    margin-top: 0.25rem;
+}
+
+/* Animación de los pasos de una receta en la página de inicio (#27, Álvaro). */
+.animacion-pasos {
+    max-width: 480px;
+}
+
+.animacion-pasos img {
+    border-radius: 16px;
+}
+
+.animacion-pasos figcaption {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* ===== 12. Pie ===== */
 .pie {
     background-color: var(--color-texto);
     color: var(--color-claro);
@@ -91,7 +440,7 @@ h3 {
     font-size: 0.9rem;
 }
 
-/* ===== Móvil ===== */
+/* ===== 13. Media queries: móvil (hasta 767px) ===== */
 @media (max-width: 767px) {
     .contenido {
         padding-top: 1rem;
@@ -100,29 +449,138 @@ h3 {
     .navegacion .nav-link {
         padding-left: 0.5rem;
     }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    /* En móvil los botones de formulario ocupan todo el ancho: son más fáciles de pulsar. */
+    .contenido form>button[type="submit"],
+    #btn-anadir,
+    .fila-ingrediente .btn-quitar {
+        width: 100%;
+    }
+
+    .contenido fieldset {
+        padding: 0.75rem 1rem 1rem;
+    }
+
+    .formulario-sesion {
+        padding: 1.25rem;
+    }
+
+    .pagina-sesion {
+        margin-top: 0.5rem;
+    }
 }
 
-.campo-invalido {
-    border: 2px solid #dc3545;
+/* ===== 14. Media queries: tablet y escritorio (desde 768px) ===== */
+@media (min-width: 768px) {
+
+    /* Fila de ingrediente en cuadrícula: los títulos arriba y los campos debajo.
+       Columnas: nombre | cantidad | unidad | botón Quitar.
+       Se usa :nth-of-type para que los mensajes de error (<span>) no descoloquen los campos. */
+    .fila-ingrediente {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        column-gap: 1rem;
+        align-items: end;
+    }
+
+    .fila-ingrediente label {
+        margin-top: 0;
+    }
+
+    .fila-ingrediente label:nth-of-type(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .fila-ingrediente input:nth-of-type(1) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .fila-ingrediente label:nth-of-type(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .fila-ingrediente input:nth-of-type(2) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .fila-ingrediente label:nth-of-type(3) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .fila-ingrediente select {
+        grid-column: 3;
+        grid-row: 2;
+    }
+
+    .fila-ingrediente .btn-quitar {
+        grid-column: 4;
+        grid-row: 2;
+        margin-top: 0;
+    }
+
+    /* Cada mensaje de error va justo debajo de su campo (JS lo inserta detrás del campo). */
+    .fila-ingrediente input:nth-of-type(1)+.error-campo {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .fila-ingrediente input:nth-of-type(2)+.error-campo {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    .fila-ingrediente select+.error-campo {
+        grid-column: 3;
+        grid-row: 3;
+    }
+
+    /* Vista en lista: la tarjeta pasa a horizontal, con la imagen a la izquierda,
+       el texto en el centro y los datos (categoría, tiempo, autor) a la derecha. */
+    .vista-lista .card {
+        flex-direction: row;
+    }
+
+    .vista-lista .card-img-top {
+        width: 220px;
+        height: auto;
+        min-height: 100%;
+    }
+
+    .vista-lista .card-body {
+        flex: 1;
+    }
+
+    .vista-lista .list-group {
+        width: 230px;
+        border-left: 1px solid var(--color-borde);
+    }
+
+    /* El efecto de subir al pasar el ratón no queda bien con tarjetas tan anchas. */
+    .vista-lista .card:hover {
+        transform: none;
+    }
 }
 
-.error-campo {
-    display: block;
-    color: #dc3545;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-}
+/* Escritorio (desde 992px): formularios y detalle con un ancho cómodo de lectura. */
+@media (min-width: 992px) {
 
-/* ===== GIF===== */
-.animacion-pasos {
-    max-width: 480px;
-}
+    .contenido form#form-receta,
+    .contenido>p,
+    .contenido>ul:not(.aviso),
+    .contenido>img {
+        max-width: 850px;
+    }
 
-.animacion-pasos img {
-    border-radius: 16px;
-}
-
-.animacion-pasos figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
+    h1 {
+        font-size: 2.5rem;
+    }
 }

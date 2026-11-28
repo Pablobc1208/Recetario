@@ -3,6 +3,8 @@ require_once __DIR__ . '/conexion.php';
 
 $recetas = [];
 $categorias = [];
+$sugerenciasTitulos = [];
+$sugerenciasIngredientes = [];
 $error = '';
 
 // 1. Recuperar los filtros enviados por GET (si no se envían, quedan vacíos).
@@ -19,6 +21,21 @@ try {
     $stmt = $pdo->prepare('SELECT id_categoria, nombre FROM categorias ORDER BY nombre');
     $stmt->execute();
     $categorias = $stmt->fetchAll();
+
+    // Títulos de recetas y nombres de ingredientes: se sugieren al escribir en los filtros (<datalist>).
+    $sugerenciasTitulos = [];
+    $stmt = $pdo->prepare('SELECT titulo FROM recetas ORDER BY titulo');
+    $stmt->execute();
+    foreach ($stmt->fetchAll() as $fila) {
+        $sugerenciasTitulos[] = $fila['titulo'];
+    }
+
+    $sugerenciasIngredientes = [];
+    $stmt = $pdo->prepare('SELECT nombre FROM ingredientes ORDER BY nombre');
+    $stmt->execute();
+    foreach ($stmt->fetchAll() as $fila) {
+        $sugerenciasIngredientes[] = $fila['nombre'];
+    }
 
     // 2. Construir la consulta: se parte de la consulta de todas las recetas
     //    y se añade una condición por cada filtro que se haya rellenado.
@@ -72,6 +89,7 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-4">
         <label for="texto" class="form-label">Buscar en el título</label>
         <input type="text" id="texto" name="texto" class="form-control" placeholder="Ej.: tortilla"
+            list="sugerencias-titulos" autocomplete="off"
             value="<?= htmlspecialchars($texto, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-3">
@@ -88,14 +106,28 @@ require_once __DIR__ . '/header.php';
     <div class="col-12 col-md-3">
         <label for="ingrediente" class="form-label">Ingrediente</label>
         <input type="text" id="ingrediente" name="ingrediente" class="form-control" placeholder="Ej.: huevo"
+            list="sugerencias-filtro-ingredientes" autocomplete="off"
             value="<?= htmlspecialchars($ingrediente, ENT_QUOTES, 'UTF-8') ?>">
     </div>
     <div class="col-12 col-md-2">
         <button type="submit" class="btn btn-primary w-100">Buscar</button>
         <?php if ($hayFiltros): ?>
-            <a href="listado_recetas.php" class="d-block text-center mt-2">Quitar filtros</a>
+            <!-- Enlace con aspecto de botón (clases de Bootstrap) -->
+            <a href="listado_recetas.php" class="btn btn-outline-secondary w-100 mt-2">Quitar filtros</a>
         <?php endif; ?>
     </div>
+
+    <!-- Sugerencias que el navegador va mostrando mientras se escribe en los filtros -->
+    <datalist id="sugerencias-titulos">
+        <?php foreach ($sugerenciasTitulos as $tituloSugerido): ?>
+            <option value="<?= htmlspecialchars($tituloSugerido, ENT_QUOTES, 'UTF-8') ?>"></option>
+        <?php endforeach; ?>
+    </datalist>
+    <datalist id="sugerencias-filtro-ingredientes">
+        <?php foreach ($sugerenciasIngredientes as $ingredienteSugerido): ?>
+            <option value="<?= htmlspecialchars($ingredienteSugerido, ENT_QUOTES, 'UTF-8') ?>"></option>
+        <?php endforeach; ?>
+    </datalist>
 </form>
 
 <?php if ($error): ?>
@@ -104,7 +136,8 @@ require_once __DIR__ . '/header.php';
     </p>
 <?php elseif (count($recetas) === 0 && $hayFiltros): ?>
     <!-- 4. Mensaje cuando los filtros no encuentran ninguna receta -->
-    <p>No hay recetas que coincidan con tu búsqueda. <a href="listado_recetas.php">Ver todas las recetas</a>.</p>
+    <p>No hay recetas que coincidan con tu búsqueda.</p>
+    <a href="listado_recetas.php" class="btn btn-outline-primary">Ver todas las recetas</a>
 <?php elseif (count($recetas) === 0): ?>
     <p>Todavía no hay recetas. <a href="formulario_receta.php">Crea la primera</a>.</p>
 <?php else: ?>

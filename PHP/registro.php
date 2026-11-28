@@ -75,40 +75,43 @@ $titulo = 'Registrarse';
 $paginaActual = 'registro';
 require_once __DIR__ . '/header.php';
 ?>
-<h1>Crear una cuenta</h1>
+<!-- .pagina-sesion centra todo el bloque, igual que en login.php (estilos en CSS/style.css) -->
+<section class="pagina-sesion">
+    <h1>Crear una cuenta</h1>
 
-<?php if (!empty($errores)): ?>
-    <ul class="alert alert-danger" role="alert">
-        <?php foreach ($errores as $error): ?>
-            <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li>
-        <?php endforeach; ?>
-    </ul>
-<?php endif; ?>
+    <?php if (!empty($errores)): ?>
+        <ul class="alert alert-danger" role="alert">
+            <?php foreach ($errores as $error): ?>
+                <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
 
-<form method="post" action="registro.php" class="formulario-sesion">
-    <div class="mb-3">
-        <label for="nombre_usuario" class="form-label">Nombre de usuario</label>
-        <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" minlength="3" maxlength="50"
-            required autocomplete="username" value="<?= htmlspecialchars($nombreUsuario, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" id="email" name="email" class="form-control" maxlength="100" required autocomplete="email"
-            value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="mb-3">
-        <label for="contrasena" class="form-label">Contraseña (mínimo 8 caracteres)</label>
-        <input type="password" id="contrasena" name="contrasena" class="form-control" minlength="8" required
-            autocomplete="new-password">
-    </div>
-    <div class="mb-3">
-        <label for="repetir_contrasena" class="form-label">Repite la contraseña</label>
-        <input type="password" id="repetir_contrasena" name="repetir_contrasena" class="form-control" minlength="8"
-            required autocomplete="new-password">
-    </div>
-    <button type="submit" class="btn btn-danger">Registrarme</button>
-</form>
+    <form method="post" action="registro.php" class="formulario-sesion">
+        <div class="mb-3">
+            <label for="nombre_usuario" class="form-label">Nombre de usuario</label>
+            <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" minlength="3" maxlength="50"
+                required autocomplete="username" value="<?= htmlspecialchars($nombreUsuario, ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" name="email" class="form-control" maxlength="100" required autocomplete="email"
+                value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="mb-3">
+            <label for="contrasena" class="form-label">Contraseña (mínimo 8 caracteres)</label>
+            <input type="password" id="contrasena" name="contrasena" class="form-control" minlength="8" required
+                autocomplete="new-password">
+        </div>
+        <div class="mb-3">
+            <label for="repetir_contrasena" class="form-label">Repite la contraseña</label>
+            <input type="password" id="repetir_contrasena" name="repetir_contrasena" class="form-control" minlength="8"
+                required autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-danger">Registrarme</button>
+    </form>
 
-<p class="mt-3">¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>
+    <p class="mt-3">¿Ya tienes cuenta? <a href="login.php">Inicia sesión</a></p>
+</section>
 
 <?php require_once __DIR__ . '/footer.php'; ?>

@@ -76,6 +76,18 @@ foreach ($categorias as $cat) {
     $idsCategorias[] = $cat['id_categoria'];
 }
 
+//nombres de los ingredientes ya guardados: se sugieren mientras se escribe (<datalist>)
+$nombresIngredientes = [];
+try {
+    $stmt = $pdo->prepare('SELECT nombre FROM ingredientes ORDER BY nombre');
+    $stmt->execute();
+    foreach ($stmt->fetchAll() as $fila) {
+        $nombresIngredientes[] = $fila['nombre'];
+    }
+} catch (PDOException $e) {
+    error_log($e->getMessage()); //sin sugerencias el formulario sigue funcionando
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //los valores del formulario son los que ha escrito el usuario
     //is_string comprueba que llega texto: si alguien manda un array (campo[]=...), se trata como vacio
@@ -315,6 +327,7 @@ require_once __DIR__ . '/header.php';
                 <p class="fila-ingrediente">
                     <label for="ing_nombre_<?= $i ?>" class="etiqueta-ingrediente">Ingrediente <?= $i + 1 ?></label>
                     <input type="text" id="ing_nombre_<?= $i ?>" name="ing_nombre[]" maxlength="100"
+                        list="sugerencias-ingredientes" autocomplete="off"
                         value="<?= htmlspecialchars($ing['nombre'], ENT_QUOTES, 'UTF-8') ?>">
 
                     <label for="ing_cantidad_<?= $i ?>">Cantidad</label>
@@ -334,6 +347,13 @@ require_once __DIR__ . '/header.php';
                 </p>
             <?php endfor; ?>
         </div>
+
+        <!-- Sugerencias al escribir el nombre de un ingrediente: el navegador las filtra solo -->
+        <datalist id="sugerencias-ingredientes">
+            <?php foreach ($nombresIngredientes as $nombreIngrediente): ?>
+                <option value="<?= htmlspecialchars($nombreIngrediente, ENT_QUOTES, 'UTF-8') ?>"></option>
+            <?php endforeach; ?>
+        </datalist>
 
         <button type="button" id="btn-anadir">+ Añadir ingrediente</button>
     </fieldset>

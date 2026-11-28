@@ -53,26 +53,29 @@ $titulo = 'Iniciar sesión';
 $paginaActual = 'login';
 require_once __DIR__ . '/header.php';
 ?>
-<h1>Iniciar sesión</h1>
+<!-- .pagina-sesion centra todo el bloque (estilos en CSS/style.css) -->
+<section class="pagina-sesion">
+    <h1>Iniciar sesión</h1>
 
-<?php foreach ($errores as $error): ?>
-    <p class="alert alert-danger" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
-<?php endforeach; ?>
+    <?php foreach ($errores as $error): ?>
+        <p class="alert alert-danger" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
+    <?php endforeach; ?>
 
-<form method="post" action="login.php" class="formulario-sesion">
-    <div class="mb-3">
-        <label for="nombre_usuario" class="form-label">Nombre de usuario</label>
-        <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" maxlength="50" required
-            autocomplete="username" value="<?= htmlspecialchars($nombreUsuario, ENT_QUOTES, 'UTF-8') ?>">
-    </div>
-    <div class="mb-3">
-        <label for="contrasena" class="form-label">Contraseña</label>
-        <input type="password" id="contrasena" name="contrasena" class="form-control" required
-            autocomplete="current-password">
-    </div>
-    <button type="submit" class="btn btn-danger">Entrar</button>
-</form>
+    <form method="post" action="login.php" class="formulario-sesion">
+        <div class="mb-3">
+            <label for="nombre_usuario" class="form-label">Nombre de usuario</label>
+            <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" maxlength="50" required
+                autocomplete="username" value="<?= htmlspecialchars($nombreUsuario, ENT_QUOTES, 'UTF-8') ?>">
+        </div>
+        <div class="mb-3">
+            <label for="contrasena" class="form-label">Contraseña</label>
+            <input type="password" id="contrasena" name="contrasena" class="form-control" required
+                autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-danger">Entrar</button>
+    </form>
 
-<p class="mt-3">¿No tienes cuenta? <a href="registro.php">Regístrate</a></p>
+    <p class="mt-3">¿No tienes cuenta? <a href="registro.php">Regístrate</a></p>
+</section>
 
 <?php require_once __DIR__ . '/footer.php'; ?>
