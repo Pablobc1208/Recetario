@@ -76,11 +76,11 @@ require_once __DIR__ . '/header.php';
         <!-- Editar va por GET (solo muestra el formulario); eliminar va por POST (#11). -->
         <!-- La confirmación antes de eliminar está en JS/eliminar.js -->
         <p>
-            <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>">Editar receta</a>
+            <a href="editar_receta.php?id=<?= (int) $receta['id_receta'] ?>" class="btn btn-primary">Editar receta</a>
         </p>
         <form class="form-eliminar" action="eliminar_receta.php" method="POST">
             <input type="hidden" name="id_receta" value="<?= (int) $receta['id_receta'] ?>">
-            <button type="submit">Eliminar receta</button>
+            <button type="submit" class="btn btn-outline-primary">Eliminar receta</button>
         </form>
     <?php endif; ?>
 

@@ -308,10 +308,45 @@ button:focus,
     text-decoration: underline;
 }
 
+/* Botones del final de un formulario puestos en fila (Guardar + Cancelar en editar receta). */
+.acciones-formulario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Enlace «Cancelar» con el mismo aspecto que un botón secundario del formulario. */
+.contenido a.btn-cancelar:not(.btn) {
+    display: inline-block;
+    padding: 0.5rem 1.25rem;
+    border: 2px solid var(--color-principal);
+    border-radius: var(--radio);
+    background-color: transparent;
+    color: var(--color-principal);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color var(--transicion), color var(--transicion);
+}
+
+.contenido a.btn-cancelar:not(.btn):hover,
+.contenido a.btn-cancelar:not(.btn):focus {
+    background-color: var(--color-principal);
+    color: var(--color-claro);
+}
+
 /* Botones de editar y eliminar dentro de la tarjeta (mis recetas). */
 .card .form-eliminar {
     display: inline-block;
     margin-left: 0.75rem;
+}
+
+/* «Eliminar» de la tarjeta alineado con «Editar»: sin el margen de arriba de los
+   botones de formulario y sin ocupar todo el ancho en móvil. */
+.contenido .card .form-eliminar button {
+    width: auto;
+    margin-top: 0;
 }
 
 /* ===== 8. Listado: filtros y vista en lista (#19) ===== */

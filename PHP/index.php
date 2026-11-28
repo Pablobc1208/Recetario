@@ -41,7 +41,7 @@ require_once __DIR__ . '/header.php';
         <a href="formulario_receta.php" class="btn btn-outline-primary mb-2">Nueva receta</a>
     <?php else: ?>
         <a href="registro.php" class="btn btn-outline-primary me-2 mb-2">Crear una cuenta</a>
-        <a href="login.php" class="btn btn-link mb-2">Ya tengo cuenta</a>
+        <a href="login.php" class="btn btn-outline-primary mb-2">Ya tengo cuenta</a>
     <?php endif; ?>
 </section>
 
