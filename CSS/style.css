@@ -176,10 +176,10 @@ button:focus,
     transition: background-color var(--transicion), border-color var(--transicion), color var(--transicion);
 }
 
-.contenido button:not(.btn, .navbar-toggler):hover,
-.contenido button:not(.btn, .navbar-toggler):focus-visible {
-    border-color: var(--color-principal-oscuro);
-    background-color: var(--color-principal-oscuro);
+/* Botón desactivado. Va antes de los :hover para respetar el orden de especificidad. */
+.contenido button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Clase reutilizable: botón secundario (fondo transparente y borde del color principal).
@@ -192,17 +192,23 @@ button:focus,
     color: var(--color-principal);
 }
 
+/* Separación del botón «Añadir ingrediente» (#17). Va antes de los :hover por especificidad. */
+.contenido #btn-anadir {
+    margin-top: 0.25rem;
+}
+
+.contenido button:not(.btn, .navbar-toggler):hover,
+.contenido button:not(.btn, .navbar-toggler):focus-visible {
+    border-color: var(--color-principal-oscuro);
+    background-color: var(--color-principal-oscuro);
+}
+
 .contenido .btn-secundario:hover,
 .contenido #btn-anadir:hover,
 .contenido .btn-quitar:hover,
 .contenido .form-eliminar button:hover {
     background-color: var(--color-principal);
     color: var(--color-claro);
-}
-
-.contenido button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* ===== 5. Enlaces, imágenes y listas ===== */
@@ -294,11 +300,11 @@ button:focus,
     /* recorta la imagen sin deformarla */
 }
 
-.card-title a {
+.contenido .card-title a:not(.btn) {
     text-decoration: none;
 }
 
-.card-title a:hover {
+.contenido .card-title a:not(.btn):hover {
     text-decoration: underline;
 }
 
@@ -459,12 +465,8 @@ button:focus,
     border-bottom: 1px dashed var(--color-borde);
 }
 
-.fila-ingrediente .btn-quitar {
+.contenido .fila-ingrediente .btn-quitar {
     margin-top: 0.75rem;
-}
-
-#btn-anadir {
-    margin-top: 0.25rem;
 }
 
 /* Animación de los pasos de una receta en la página de inicio (#27, Álvaro). */
@@ -575,7 +577,7 @@ button:focus,
         grid-row: 2;
     }
 
-    .fila-ingrediente .btn-quitar {
+    .contenido .fila-ingrediente .btn-quitar {
         grid-column: 4;
         grid-row: 2;
         margin-top: 0;
@@ -592,7 +594,7 @@ button:focus,
         grid-row: 3;
     }
 
-    .fila-ingrediente select+.error-campo {
+    .fila-ingrediente select:nth-of-type(1)+.error-campo {
         grid-column: 3;
         grid-row: 3;
     }
