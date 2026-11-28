@@ -57,6 +57,53 @@ h2 {
     padding-bottom: 2rem;
 }
 
+.btn {
+    transition: color var(--transicion), background-color var(--transicion),
+        border-color var(--transicion), box-shadow var(--transicion), transform var(--transicion);
+}
+
+/* recuadro de cuando pulsas tab */
+a:focus,
+button:focus,
+.btn:focus {
+    outline: 3px solid var(--color-texto);
+    /* recuadro oscuro de 3 px */
+    box-shadow: none;
+    /* quito la sombra azul de Bootstrap */
+}
+
+.navegacion a:focus,
+.navegacion button:focus,
+.pie a:focus,
+.pie button:focus {
+    outline: 3px solid var(--color-claro);
+    box-shadow: none;
+}
+
+/* los botones se hunden un poco */
+.btn:active,
+.contenido button:active {
+    transform: scale(0.97);
+}
+
+/* los enlaces se hacen mas claritos */
+.contenido a:active {
+    opacity: 0.7;
+}
+
+/* avisos deslizantes */
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ===== 3. Cabecera y navegación ===== */
 .navegacion {
     background-color: var(--color-principal);
@@ -191,6 +238,8 @@ h2 {
 /* ===== 6. Mensajes y avisos ===== */
 .mensaje {
     margin-bottom: 1.5rem;
+    animation: aparecer 0.4s;
+    /* el aviso se desliza */
 }
 
 /* Lista de errores que muestran los formularios al enviarse con datos incorrectos. */
@@ -232,6 +281,11 @@ h2 {
 .card:hover {
     transform: translateY(-3px);
     box-shadow: var(--sombra-hover);
+}
+
+/* al pulsar la tarjeta se encoge un poco */
+.card:active {
+    transform: scale(0.99);
 }
 
 .card-img-top {
