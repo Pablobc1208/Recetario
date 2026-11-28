@@ -1,0 +1,14 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="temporizador">
+<rect id="pulsador" x="102" width="36" height="18" rx="6" fill="#2D2A26"/>
+<circle id="cuerpo" cx="120" cy="124" r="108" fill="white" stroke-width="4" stroke="#2D2A26"/>
+<circle id="pista" cx="120" cy="124" r="83" stroke-width="14" stroke="#E8DDD0"/>
+<circle id="progreso" cx="120" cy="124" r="83" stroke-width="14" stroke-linecap="round" stroke="#C0392B"/>
+<rect id="marca-1" x="118" y="52" width="4" height="12" rx="2" fill="#2D2A26"/>
+<rect id="marca-2" x="180" y="122" width="12" height="4" rx="2" fill="#2D2A26"/>
+<rect id="marca-3" x="118" y="184" width="4" height="12" rx="2" fill="#2D2A26"/>
+<rect id="marca-4" x="48" y="122" width="12" height="4" rx="2" fill="#2D2A26"/>
+<circle id="boton" cx="120" cy="124" r="36" fill="#C0392B"/>
+<path id="icono-play" d="M139 124L116.5 136.99V111.01L139 124Z" fill="white"/>
+</g>
+</svg>

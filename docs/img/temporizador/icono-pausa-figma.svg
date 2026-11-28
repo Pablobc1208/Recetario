@@ -1,0 +1,12 @@
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icono-pausa" clip-path="url(#clip0_1_13)">
+<circle id="boton" cx="36" cy="36" r="36" fill="#C0392B"/>
+<rect id="barra-1" x="24" y="22" width="8" height="28" rx="2" fill="white"/>
+<rect id="barra-2" x="40" y="22" width="8" height="28" rx="2" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_1_13">
+<rect width="72" height="72" fill="white"/>
+</clipPath>
+</defs>
+</svg>

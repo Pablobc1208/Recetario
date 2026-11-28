@@ -229,15 +229,18 @@ button:focus,
     height: auto;
 }
 
-/* Listas sueltas de la página (categorías, ingredientes, ingredientes de una receta). */
-.contenido>ul:not(.aviso) {
+/* Listas sueltas de la página (categorías, ingredientes, ingredientes de una receta).
+   .receta-detalle es la columna de la receta en receta.php (#30). */
+.contenido>ul:not(.aviso),
+.receta-detalle>ul:not(.aviso) {
     padding: 1rem 1rem 1rem 2.25rem;
     border: 1px solid var(--color-borde);
     border-radius: var(--radio);
     background-color: var(--color-claro);
 }
 
-.contenido>ul:not(.aviso) li {
+.contenido>ul:not(.aviso) li,
+.receta-detalle>ul:not(.aviso) li {
     padding: 0.25rem 0;
 }
 
@@ -369,8 +372,8 @@ button:focus,
 }
 
 /* ===== 9. Detalle de receta ===== */
-/* La imagen de la receta (va suelta dentro de .contenido). */
-.contenido>img {
+/* La imagen de la receta (dentro de la columna .receta-detalle, #30). */
+.receta-detalle>img {
     display: block;
     max-height: 400px;
     margin-bottom: 1.5rem;
@@ -392,8 +395,121 @@ button:focus,
 }
 
 /* Botón «Eliminar receta» en el detalle. */
-.contenido>.form-eliminar {
+.receta-detalle>.form-eliminar {
     margin-bottom: 1.5rem;
+}
+
+/* wl dibujo sale de Figma pero los colores se ponen aqui con las variables de la guia */
+.temporizador {
+    max-width: 260px;
+    margin: 0 auto 1.5rem;
+    /* centrado en su columna */
+    text-align: center;
+}
+
+.temporizador-boton {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    font-weight: 600;
+}
+
+.temporizador-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 0.5rem;
+}
+
+.temporizador-svg .pulsador,
+.temporizador-svg .marcas {
+    fill: var(--color-texto);
+}
+
+/* el pulsador de arriba baja un poco al pasar el raton */
+.temporizador-svg .pulsador {
+    transition: transform var(--transicion);
+}
+
+.temporizador-svg .cuerpo {
+    fill: var(--color-claro);
+    stroke: var(--color-texto);
+    stroke-width: 4;
+}
+
+.temporizador-svg .pista,
+.temporizador-svg .progreso {
+    fill: none;
+    stroke-width: 14;
+}
+
+.temporizador-svg .pista {
+    stroke: var(--color-borde);
+}
+
+/* JS/temporizador.js cambia stroke-dashoffset cada segundo y la transición lo suaviza. */
+.temporizador-svg .progreso {
+    stroke: var(--color-principal);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.temporizador-svg .boton-centro {
+    fill: var(--color-principal);
+    transition: fill var(--transicion);
+}
+
+.temporizador-svg .icono-play,
+.temporizador-svg .icono-pausa {
+    fill: var(--color-claro);
+}
+
+/* Parado se ve «play»; en marcha se ve «pausa». */
+.temporizador-svg .icono-pausa,
+.temporizador.en-marcha .icono-play {
+    display: none;
+}
+
+.temporizador.en-marcha .icono-pausa {
+    display: inline;
+}
+
+.temporizador-boton:hover .pulsador,
+.temporizador-boton:focus .pulsador {
+    transform: translateY(4px);
+}
+
+.temporizador-boton:hover .boton-centro,
+.temporizador-boton:focus .boton-centro {
+    fill: var(--color-principal-oscuro);
+}
+
+.temporizador-tiempo {
+    margin: 0.5rem 0;
+    font-family: var(--fuente-titulos);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* cuando se acaba el tiempo el temporizador vibra 5 veces */
+@keyframes vibrar {
+
+    0%,
+    100% {
+        transform: rotate(0);
+    }
+
+    25% {
+        transform: rotate(-4deg);
+    }
+
+    75% {
+        transform: rotate(4deg);
+    }
+}
+
+.temporizador.terminado .temporizador-svg {
+    animation: vibrar 0.3s ease-in-out 5;
 }
 
 /* ===== 10. Formularios ===== */
